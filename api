@@ -1,7 +1,0 @@
-echo "# Proyecto2025-Demo-Baudino-Ruival-Carpineti" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/UCC-ArqSoft1/Proyecto2025-Demo-Baudino-Ruival-Carpineti.git
-git push -u origin main
