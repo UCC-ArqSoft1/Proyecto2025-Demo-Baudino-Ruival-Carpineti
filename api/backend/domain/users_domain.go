@@ -20,9 +20,3 @@ type Inscripcion struct {
 	HorarioID        int    `json:"horario_id"`
 	FechaInscripcion string `json:"fecha_inscripcion"`
 }
-
-type User struct {
-	ID       int
-	Username string
-	Password string
-}

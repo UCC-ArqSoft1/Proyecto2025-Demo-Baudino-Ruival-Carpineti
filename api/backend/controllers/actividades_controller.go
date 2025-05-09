@@ -77,3 +77,26 @@ func InscribirEnActividad(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Inscripción exitosa"})
 }
+
+/*
+// Validar LoginUsuario valida el login de un usuario
+func LoginUsuario(c *gin.Context) {
+	var request struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := services.Login(request.Username, request.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Credenciales inválidas"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+*/
