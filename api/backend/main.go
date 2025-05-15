@@ -4,7 +4,6 @@ package main
 
 import (
 	"backend/controllers"
-	"backend/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,8 +17,6 @@ func main() {
 	router.GET("/actividades/:id", controllers.GetActividadByID)
 	router.GET("/usuarios/:usuarioID/actividades", controllers.GetActividadesUsuario)
 	router.POST("/usuarios/:usuarioID/inscripciones", controllers.InscribirEnActividad)
-
-	services.Login("emiliano", "1234")
 
 	router.Run(":8080")
 }

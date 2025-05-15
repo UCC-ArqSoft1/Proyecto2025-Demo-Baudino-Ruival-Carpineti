@@ -8,41 +8,47 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
+type MySQLClient struct {
 	DB *gorm.DB
-)
+}
 
-func init() {
-	user := "root"
-	password := "root"
-	host := "localhost"
-	port := 3306
-	database := "backend"
-	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8mb4&loc=Local",
-		user, password, host, port, database)
-
-	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+func NewMySQLClient() *MySQLClient {
+	dsnFormat := "%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8mb4&loc=Local"
+	dsn := fmt.Sprintf(dsnFormat, "root", "root", "localhost", 3306, "backend")
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(fmt.Sprintf("error connecting to DB: %v", err))
+		panic(fmt.Errorf("error connecting to database: %w", err))
 	}
 
-	DB.AutoMigrate(&dao.Usuario{}) //Migrar la tabla de usuarios
-	//DB.AutoMigrate(&dao.Horario{}) //Migrar la tabla de horarios
-	//DB.AutoMigrate(&dao.Actividad{}) //Migrar la tabla de actividades
-	DB.AutoMigrate(&dao.Inscripcion{}) //Migrar la tabla de inscripciones
-
-	/*DB.Create(&dao.Usuario{
-		ID:       1,
-		Nombre: "emiliano",
-		HashedPassword: "121j212hs9812sj2189sj",
-	})*/
+	for _, table := range []interface{}{
+		&dao.User{},
+		&dao.Inscription{},
+	} {
+		if err := db.AutoMigrate(&table); err != nil {
+			panic(fmt.Errorf("error migrating table: %w", err))
+		}
+	}
+	return &MySQLClient{
+		DB: db,
+	}
 }
 
-func GetUserByUsername(username string) dao.Usuario {
-	var user dao.Usuario
-	// SELECT * FROM users WHERE username = ? LIMIT 1
-	DB.First(&user, "username = ?", username)
-	return user
+func (c *MySQLClient) GetUserByUsername(username string) (dao.User, error) {
+	var userDAO dao.User
+	//SELECT * FROM users WHERE username = "admin" LIMIT 1
+	txn := c.DB.First(&userDAO, "username = ?", username)
+	if txn.Error != nil {
+		return dao.User{}, fmt.Errorf("error getting user: %w", txn.Error)
+	}
+	return userDAO, nil
 }
+
+/*
+func (c *MySQLClient) CreateActivity(activity dao.Activity) (int,error){
+	txn := c.DB.Create(&activity)
+	if txn.Error != nil {
+		return 0, fmt.Errorf("error creating activity: %w", txn.Error)
+	}
+	return activity.ID, nil
+}
+*/

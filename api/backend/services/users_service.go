@@ -1,18 +1,38 @@
 package services
 
 import (
-	"backend/clients"
+	"backend/dao"
+	"backend/utils"
 	"fmt"
 )
 
-func Login(username string, password string) {
-	// Get user by username from DB
-	user := clients.GetUserByUsername(username)
-	fmt.Println("Usuario obtenido", user)
+type UsersClient interface {
+	GetUserByUsername(username string) (dao.User, error)
+}
 
-	// Hash password
+type UsersService struct {
+	usersClient UsersClient
+}
 
-	// Compare hashes
+func NewUsersService(usersClient UsersClient) *UsersService {
+	return &UsersService{
+		usersClient: usersClient,
+	}
+}
 
-	// Generate token
+func (s *UsersService) Login(username, password string) (int, string, error) { //devuelve ID(usuario), token generado y error
+	userDAO, err := s.usersClient.GetUserByUsername(username)
+	if err != nil {
+		return 0, "", fmt.Errorf("error getting user: %w", err)
+	}
+
+	if utils.HashSHA256(password) != userDAO.PasswordHash {
+		return 0, "", fmt.Errorf("invalid credentials")
+	}
+
+	token, err := utils.GenerateJWT(userDAO.ID)
+	if err != nil {
+		return 0, "", fmt.Errorf("error generating token: %w", err)
+	}
+	return userDAO.ID, token, nil
 }
