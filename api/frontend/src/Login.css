@@ -1,0 +1,77 @@
+/* Fondo general */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-image: url('https://images.unsplash.com/photo-1571019613914-85f342c1d4bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Contenedor centrado */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    backdrop-filter: blur(4px); /* efecto desenfoque para el fondo */
+}
+
+/* Caja del formulario */
+.login-form {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Título */
+.login-form h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Campos de texto */
+.login-form input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    outline: none;
+    transition: border 0.3s;
+}
+
+.login-form input:focus {
+    border-color: #007BFF;
+}
+
+/* Botón */
+.login-form button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-form button:hover {
+    background-color: #0056b3;
+}
+
+/* Mensaje de error */
+.error {
+    color: red;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
