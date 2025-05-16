@@ -11,4 +11,5 @@ type Usuario struct {
 	// Ver que usuarios estan inscriptos en qué horarios
 	// Controlar el cupo por horario
 	// Facilitar la búsqueda de actividades disponibles en un día y hora específicos
+	//dd
 }
