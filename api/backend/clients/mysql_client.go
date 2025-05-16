@@ -23,6 +23,8 @@ func NewMySQLClient() *MySQLClient {
 	for _, table := range []interface{}{
 		&dao.User{},
 		&dao.Inscription{},
+		&dao.Activities{},
+		&dao.Schedules{},
 	} {
 		if err := db.AutoMigrate(&table); err != nil {
 			panic(fmt.Errorf("error migrating table: %w", err))

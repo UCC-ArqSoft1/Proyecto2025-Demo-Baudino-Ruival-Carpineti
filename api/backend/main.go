@@ -26,5 +26,4 @@ func main() {
 	router.POST("/login", userController.Login)
 
 	router.Run(":8080")
-	jhj
 }
