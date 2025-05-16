@@ -20,3 +20,13 @@ type Inscripcion struct {
 	HorarioID        int    `json:"horario_id"`
 	FechaInscripcion string `json:"fecha_inscripcion"`
 }
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	UserID int    `json:"user_id"`
+	Token  string `json:"token"`
+}
