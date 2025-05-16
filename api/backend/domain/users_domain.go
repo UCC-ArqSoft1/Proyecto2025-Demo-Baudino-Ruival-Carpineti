@@ -12,21 +12,3 @@ type Usuario struct {
 	// Controlar el cupo por horario
 	// Facilitar la búsqueda de actividades disponibles en un día y hora específicos
 }
-
-// Inscripcion representa la relación entre un socio y una actividad en un horario específico
-type Inscripcion struct {
-	ID               int    `json:"id" gorm:"primaryKey"`
-	UsuarioID        int    `json:"usuario_id"`
-	HorarioID        int    `json:"horario_id"`
-	FechaInscripcion string `json:"fecha_inscripcion"`
-}
-
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type LoginResponse struct {
-	UserID int    `json:"user_id"`
-	Token  string `json:"token"`
-}
