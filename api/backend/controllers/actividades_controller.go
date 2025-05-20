@@ -8,60 +8,60 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetActividades retorna todas las actividades disponibles
-func GetActividades(c *gin.Context) {
-	actividades := services.GetActividades()
-	c.JSON(http.StatusOK, actividades)
+// GetActivities returns all available activities
+func GetActivities(c *gin.Context) {
+	activities := services.GetActivities()
+	c.JSON(http.StatusOK, activities)
 }
 
-// GetActividadByID retorna una actividad específica por su ID
-func GetActividadByID(c *gin.Context) {
+// GetActivityByID returns a specific activity by its ID
+func GetActivityByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	actividad, err := services.GetActividadByID(id)
+	activity, err := services.GetActivityByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Actividad no encontrada"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Activity not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, actividad)
+	c.JSON(http.StatusOK, activity)
 }
 
-// BuscarActividades busca actividades por categoría o palabra clave
-func BuscarActividades(c *gin.Context) {
-	categoria := c.Query("categoria")
-	palabraClave := c.Query("palabraClave")
+// SearchActivities searches activities by category or keyword
+func SearchActivities(c *gin.Context) {
+	category := c.Query("category")
+	keyword := c.Query("keyword")
 
-	actividades := services.BuscarActividades(categoria, palabraClave)
-	c.JSON(http.StatusOK, actividades)
+	activities := services.SearchActivities(category, keyword)
+	c.JSON(http.StatusOK, activities)
 }
 
-// GetActividadesUsuario retorna las actividades a las que el usuario está inscrito
-func GetActividadesUsuario(c *gin.Context) {
-	usuarioID, err := strconv.Atoi(c.Param("usuarioID"))
+// GetUserActivities returns the activities a user is enrolled in
+func GetUserActivities(c *gin.Context) {
+	userID, err := strconv.Atoi(c.Param("userID"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de usuario inválido"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	actividades := services.GetActividadesByUsuarioID(usuarioID)
-	c.JSON(http.StatusOK, actividades)
+	activities := services.GetActivitiesByUserID(userID)
+	c.JSON(http.StatusOK, activities)
 }
 
-// InscribirEnActividad inscribe a un usuario en un horario específico de una actividad
-func InscribirEnActividad(c *gin.Context) {
-	usuarioID, err := strconv.Atoi(c.Param("usuarioID"))
+// EnrollInActivity enrolls a user in a specific schedule
+func EnrollInActivity(c *gin.Context) {
+	userID, err := strconv.Atoi(c.Param("userID"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de usuario inválido"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
 	var request struct {
-		HorarioID int `json:"horario_id" binding:"required"`
+		ScheduleID int `json:"schedule_id" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -69,13 +69,13 @@ func InscribirEnActividad(c *gin.Context) {
 		return
 	}
 
-	err = services.InscribirUsuarioEnActividad(usuarioID, request.HorarioID)
+	err = services.EnrollUserInActivity(userID, request.ScheduleID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Inscripción exitosa"})
+	c.JSON(http.StatusOK, gin.H{"message": "Enrollment successful"})
 }
 
 /*

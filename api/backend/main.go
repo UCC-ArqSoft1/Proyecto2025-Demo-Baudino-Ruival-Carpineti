@@ -1,5 +1,3 @@
-// Get Hotel by ID
-
 package main
 
 import (
@@ -18,13 +16,13 @@ func main() {
 	userController := controllers.NewUserController(userService)
 
 	// Endpoints para socios (punto 2) - No requieren autenticación según el enunciado
-	router.GET("/actividades", controllers.GetActividades)
-	router.GET("/actividades/buscar", controllers.BuscarActividades)
-	router.GET("/actividades/:id", controllers.GetActividadByID)
-	router.GET("/usuarios/:usuarioID/actividades", controllers.GetActividadesUsuario)
-	router.POST("/usuarios/:usuarioID/inscripciones", controllers.InscribirEnActividad)
+	router.GET("/activities", controllers.GetActivities)
+	router.GET("/activities/:id", controllers.GetActivityByID)
+	router.GET("/activities/search", controllers.SearchActivities)
+	router.GET("/users/:userID/activities", controllers.GetUserActivities)
+	router.POST("/users/:userID/enrollments", controllers.EnrollInActivity)
+
 	router.POST("/login", userController.Login)
 
 	router.Run(":8080")
-
 }
