@@ -8,6 +8,41 @@ import (
 
 var mysqlClient = clients.NewMySQLClient()
 
+type ActivitiesService struct {
+	activitiesClient clients.ActivitiesClient
+}
+
+func NewActivitiesService(activitiesClient clients.ActivitiesClient) *ActivitiesService {
+	return &ActivitiesService{
+		activitiesClient: activitiesClient,
+	}
+}
+
+// GetActivities returns all available activities
+func (s *ActivitiesService) GetActivities() []domain.Activity {
+	return s.activitiesClient.GetActivities()
+}
+
+// GetActivityByID returns an activity by its ID
+func (s *ActivitiesService) GetActivityByID(id int) (domain.Activity, error) {
+	return s.activitiesClient.GetActivityByID(id)
+}
+
+// SearchActivities searches activities by category or keyword
+func (s *ActivitiesService) SearchActivities(category, keyword string) []domain.Activity {
+	return s.activitiesClient.SearchActivities(category, keyword)
+}
+
+// GetActivitiesByUserID returns the activities a user is enrolled in
+func (s *ActivitiesService) GetActivitiesByUserID(userID int) []domain.Activity {
+	return s.activitiesClient.GetActivitiesByUserID(userID)
+}
+
+// EnrollUserInActivity enrolls a user in a specific schedule
+func (s *ActivitiesService) EnrollUserInActivity(userID, scheduleID int) error {
+	return s.activitiesClient.EnrollUserInActivity(userID, scheduleID)
+}
+
 // GetActivities returns all available activities
 func GetActivities() []domain.Activity {
 	activitiesDAO, err := mysqlClient.GetAllActivities()
