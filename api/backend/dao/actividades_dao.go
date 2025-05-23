@@ -9,7 +9,6 @@ type Activities struct {
 	Categoria   string `gorm:"not null" json:"categoria"` // Ej: Yoga, Spinning, etc.
 	Instructor  string `gorm:"not null" json:"instructor"`
 	Duracion    int    `gorm:"not null" json:"duracion"`       // Duración en minutos
-	Cupo        int    `gorm:"not null" json:"cupo"`           // Cupo general (si se usa)
 	Imagen      string `json:"imagen,omitempty"`               // URL o ruta de la imagen
 	Estado      string `gorm:"default:'activo'" json:"estado"` // Estado actual: "activo", "inactivo"
 
