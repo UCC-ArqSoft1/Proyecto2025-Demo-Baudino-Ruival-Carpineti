@@ -1,12 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
 /* Fondo general */
 body {
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url('https://images.unsplash.com/photo-1571019613914-85f342c1d4bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: 100vh;
 }
 
 /* Contenedor centrado */
@@ -15,24 +17,37 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    backdrop-filter: blur(4px); /* efecto desenfoque para el fondo */
 }
 
 /* Caja del formulario */
 .login-form {
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 40px 30px;
-    border-radius: 12px;
-    box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+    background: linear-gradient(to bottom right, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 50px 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     text-align: center;
+    color: #fff;
 }
 
-/* Título */
+/* Título superior (nombre del gimnasio) */
+.login-form .brand-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+/* Subtítulo */
 .login-form h2 {
     margin-bottom: 20px;
-    color: #333;
+    color: white;
+    font-weight: 600;
+    font-size: 20px;
 }
 
 /* Campos de texto */
@@ -40,15 +55,21 @@ body {
     width: 100%;
     padding: 12px 15px;
     margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    border: none;
+    border-radius: 10px;
     font-size: 16px;
     outline: none;
-    transition: border 0.3s;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.login-form input::placeholder {
+    color: #ccc;
 }
 
 .login-form input:focus {
-    border-color: #007BFF;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid #61dafb;
 }
 
 /* Botón */
@@ -56,22 +77,22 @@ body {
     width: 100%;
     padding: 12px;
     margin-top: 15px;
-    background-color: #007BFF;
+    background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: transform 0.2s ease;
 }
 
 .login-form button:hover {
-    background-color: #0056b3;
+    transform: scale(1.03);
 }
 
 /* Mensaje de error */
 .error {
-    color: red;
+    color: #ff4d4d;
     margin-bottom: 15px;
     font-weight: bold;
 }
