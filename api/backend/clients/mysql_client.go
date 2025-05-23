@@ -14,11 +14,7 @@ type MySQLClient struct {
 
 func NewMySQLClient() *MySQLClient {
 	dsnFormat := "%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8mb4&loc=Local"
-<<<<<<< HEAD
 	dsn := fmt.Sprintf(dsnFormat, "root", "root", "127.0.0.1", 3306, "gimnasio")
-=======
-	dsn := fmt.Sprintf(dsnFormat, "root", "Dacota12", "127.0.0.1", 3306, "gimnasio")
->>>>>>> 0189e6cf37152153ca3bf0686089642ffbe45e45
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(fmt.Errorf("error connecting to database: %w", err))
@@ -51,7 +47,6 @@ func (c *MySQLClient) GetUserByUsername(username string) (dao.User, error) {
 
 func (c *MySQLClient) GetAllActivities() ([]dao.Activities, error) {
 	var activities []dao.Activities
-	// SELECT * FROM activities
 	result := c.DB.Preload("Horarios").Find(&activities)
 	if result.Error != nil {
 		return nil, fmt.Errorf("error getting activities: %w", result.Error)
@@ -61,7 +56,6 @@ func (c *MySQLClient) GetAllActivities() ([]dao.Activities, error) {
 
 func (c *MySQLClient) GetActivityByID(id int) (dao.Activities, error) {
 	var activity dao.Activities
-	// SELECT * FROM activities WHERE id = ? LIMIT 1
 	result := c.DB.Preload("Horarios").First(&activity, id)
 	if result.Error != nil {
 		return dao.Activities{}, fmt.Errorf("error getting activity by ID: %w", result.Error)
