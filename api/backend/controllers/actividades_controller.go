@@ -1,81 +1,96 @@
 package controllers
 
 import (
-	"backend/services"
+	"backend/domain"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
+type ActivitiesService interface {
+	GetActivities() []domain.Activity
+	GetActivityByID(id int) (domain.Activity, error)
+	SearchActivities(category, keyword string) []domain.Activity
+	GetActivitiesByUserID(userID int) []domain.Activity
+	EnrollUserInActivity(userID, scheduleID int) error
+}
+
+type ActivitiesController struct {
+	activitiesService ActivitiesService
+}
+
+func NewActivitiesController(activitiesService ActivitiesService) *ActivitiesController {
+	return &ActivitiesController{
+		activitiesService: activitiesService,
+	}
+}
+
 // GetActivities returns all available activities
-func GetActivities(c *gin.Context) {
-	activities := services.GetActivities()
-	c.JSON(http.StatusOK, activities)
+func (c *ActivitiesController) GetActivities(ctx *gin.Context) {
+	activities := c.activitiesService.GetActivities()
+	ctx.JSON(http.StatusOK, activities)
 }
 
 // GetActivityByID returns a specific activity by its ID
-func GetActivityByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+func (c *ActivitiesController) GetActivityByID(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	activity, err := services.GetActivityByID(id)
+	activity, err := c.activitiesService.GetActivityByID(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Activity not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Activity not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, activity)
+	ctx.JSON(http.StatusOK, activity)
 }
 
 // SearchActivities searches activities by category or keyword
-func SearchActivities(c *gin.Context) {
-	category := c.Query("category")
-	keyword := c.Query("keyword")
+func (c *ActivitiesController) SearchActivities(ctx *gin.Context) {
+	category := ctx.Query("category")
+	keyword := ctx.Query("keyword")
 
-	activities := services.SearchActivities(category, keyword)
-	c.JSON(http.StatusOK, activities)
+	activities := c.activitiesService.SearchActivities(category, keyword)
+	ctx.JSON(http.StatusOK, activities)
 }
 
 // GetUserActivities returns the activities a user is enrolled in
-func GetUserActivities(c *gin.Context) {
-	userID, err := strconv.Atoi(c.Param("userID"))
+func (c *ActivitiesController) GetUserActivities(ctx *gin.Context) {
+	userID, err := strconv.Atoi(ctx.Param("userID"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	activities := services.GetActivitiesByUserID(userID)
-	c.JSON(http.StatusOK, activities)
+	activities := c.activitiesService.GetActivitiesByUserID(userID)
+	ctx.JSON(http.StatusOK, activities)
 }
 
 // EnrollInActivity enrolls a user in a specific schedule
-func EnrollInActivity(c *gin.Context) {
-	userID, err := strconv.Atoi(c.Param("userID"))
+func (c *ActivitiesController) EnrollInActivity(ctx *gin.Context) {
+	userID, err := strconv.Atoi(ctx.Param("userID"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	var request struct {
-		ScheduleID int `json:"schedule_id" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var request domain.EnrollRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = services.EnrollUserInActivity(userID, request.ScheduleID)
+	err = c.activitiesService.EnrollUserInActivity(userID, request.ScheduleID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Enrollment successful"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Enrollment successful"})
 }
 
 /*
