@@ -14,7 +14,7 @@ type MySQLClient struct {
 
 func NewMySQLClient() *MySQLClient {
 	dsnFormat := "%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8mb4&loc=Local"
-	dsn := fmt.Sprintf(dsnFormat, "root", "Dacota12", "127.0.0.1", 3306, "gimnasio")
+	dsn := fmt.Sprintf(dsnFormat, "root", "", "127.0.0.1", 3306, "gimnasio")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(fmt.Errorf("error connecting to database: %w", err))

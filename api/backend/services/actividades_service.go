@@ -166,7 +166,7 @@ func (s *ActivitiesService) EnrollUserInActivity(userID, scheduleID int) error {
 
 	// Check if user is already enrolled
 	var existingEnrollment dao.Inscription
-	result = mysqlClient.DB.Where("user_id = ? AND schedule_id = ?", userID, scheduleID).First(&existingEnrollment)
+	result = mysqlClient.DB.Where("usuario_id = ? AND horario_id = ?", userID, scheduleID).First(&existingEnrollment)
 	if result.Error == nil {
 		return fmt.Errorf("user is already enrolled in this schedule")
 	}

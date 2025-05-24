@@ -1,16 +1,17 @@
-import logo from './logo.svg';
-import './App.css';
-import Hotel from './Hotel';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./Login";
+import Home from "./Home";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>HELLO WORLD OF REACT</h1>
-        <Hotel/>
-      </header>
-    </div>
-  );
+  return ( 
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/activities" element={<Home />} />
+    </Routes>
+  </BrowserRouter>
+);
 }
 
 export default App;
