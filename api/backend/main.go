@@ -12,6 +12,8 @@ import (
 func main() {
 	router := gin.Default()
 
+	var mysqlClient = clients.NewMySQLClient()
+
 	// Middleware CORS
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
@@ -20,8 +22,6 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-
-	var mysqlClient = clients.NewMySQLClient()
 
 	// Configuración de servicios y controladores de usuarios
 	var userService = services.NewUsersService(mysqlClient)

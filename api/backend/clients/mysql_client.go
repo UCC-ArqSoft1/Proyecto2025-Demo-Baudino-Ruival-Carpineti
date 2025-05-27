@@ -14,7 +14,7 @@ type MySQLClient struct {
 
 func NewMySQLClient() *MySQLClient {
 	dsnFormat := "%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8mb4&loc=Local"
-	dsn := fmt.Sprintf(dsnFormat, "root", "", "127.0.0.1", 3306, "gimnasio")
+	dsn := fmt.Sprintf(dsnFormat, "root", "root", "127.0.0.1", 3306, "gimnasio")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(fmt.Errorf("error connecting to database: %w", err))
@@ -64,13 +64,3 @@ func (c *MySQLClient) GetActivityByID(id int) (dao.Activities, error) {
 	}
 	return activity, nil
 }
-
-/*
-func (c *MySQLClient) CreateActivity(activity dao.Activity) (int,error){
-	txn := c.DB.Create(&activity)
-	if txn.Error != nil {
-		return 0, fmt.Errorf("error creating activity: %w", txn.Error)
-	}
-	return activity.ID, nil
-}
-*/

@@ -1,5 +1,6 @@
 package dao
 
+
 type User struct {
 	ID            int           `gorm:"primaryKey"`
 	PasswordHash  string        `gorm:"not null"`
