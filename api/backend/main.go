@@ -21,15 +21,16 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	var mysqlClient = clients.NewMySQLClient()
+	// Inicializar cliente MySQL
+	mysqlClient := clients.NewMySQLClient()
 
 	// Configuración de servicios y controladores de usuarios
-	var userService = services.NewUsersService(mysqlClient)
+	userService := services.NewUsersService(mysqlClient)
 	userController := controllers.NewUserController(userService)
 
 	// Configuración de servicios y controladores de actividades
-	activitiesClient := clients.NewMySQLActivitiesClient(mysqlClient)
-	activitiesService := services.NewActivitiesService(activitiesClient)
+	// Ahora pasamos directamente el mysqlClient al servicio
+	activitiesService := services.NewActivitiesService(mysqlClient)
 	activitiesController := controllers.NewActivitiesController(activitiesService)
 
 	// Endpoints para socios (punto 2) - No requieren autenticación según el enunciado

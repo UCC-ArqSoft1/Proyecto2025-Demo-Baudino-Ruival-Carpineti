@@ -7,25 +7,21 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"gorm.io/gorm"
 )
 
-var mysqlClient = clients.NewMySQLClient()
-
 type ActivitiesService struct {
-	activitiesClient clients.ActivitiesClient
+	mysqlClient *clients.MySQLClient
 }
 
-func NewActivitiesService(activitiesClient clients.ActivitiesClient) *ActivitiesService {
+func NewActivitiesService(mysqlClient *clients.MySQLClient) *ActivitiesService {
 	return &ActivitiesService{
-		activitiesClient: activitiesClient,
+		mysqlClient: mysqlClient,
 	}
 }
 
 // GetActivities returns all available activities
 func (s *ActivitiesService) GetActivities() []domain.Activity {
-	activitiesDAO, err := mysqlClient.GetAllActivities()
+	activitiesDAO, err := s.mysqlClient.GetAllActivities()
 	if err != nil {
 		fmt.Printf("Error getting activities: %v\n", err)
 		return []domain.Activity{}
@@ -63,7 +59,7 @@ func (s *ActivitiesService) GetActivities() []domain.Activity {
 
 // GetActivityByID returns an activity by its ID
 func (s *ActivitiesService) GetActivityByID(id int) (domain.Activity, error) {
-	activityDAO, err := mysqlClient.GetActivityByID(id)
+	activityDAO, err := s.mysqlClient.GetActivityByID(id)
 	if err != nil {
 		return domain.Activity{}, fmt.Errorf("error getting activity by ID: %v", err)
 	}
@@ -95,7 +91,7 @@ func (s *ActivitiesService) GetActivityByID(id int) (domain.Activity, error) {
 
 // SearchActivities searches activities by category or keyword
 func (s *ActivitiesService) SearchActivities(category, keyword string) []domain.Activity {
-	activitiesDAO, err := mysqlClient.GetAllActivities()
+	activitiesDAO, err := s.mysqlClient.GetAllActivities()
 	if err != nil {
 		fmt.Printf("Error getting activities: %v\n", err)
 		return []domain.Activity{}
@@ -148,15 +144,14 @@ func (s *ActivitiesService) SearchActivities(category, keyword string) []domain.
 // GetActivitiesByUserID returns the activities a user is enrolled in
 func (s *ActivitiesService) GetActivitiesByUserID(userID int) []domain.Activity {
 	// Get user's inscriptions
-	var inscriptions []dao.Inscription
-	result := mysqlClient.DB.Where("usuario_id = ?", userID).Find(&inscriptions)
-	if result.Error != nil {
-		fmt.Printf("Error getting user inscriptions: %v\n", result.Error)
+	inscriptions, err := s.mysqlClient.GetUserInscriptions(userID)
+	if err != nil {
+		fmt.Printf("Error getting user inscriptions: %v\n", err)
 		return []domain.Activity{}
 	}
 
 	// Get all activities
-	activitiesDAO, err := mysqlClient.GetAllActivities()
+	activitiesDAO, err := s.mysqlClient.GetAllActivities()
 	if err != nil {
 		fmt.Printf("Error getting activities: %v\n", err)
 		return []domain.Activity{}
@@ -210,21 +205,22 @@ func (s *ActivitiesService) GetActivitiesByUserID(userID int) []domain.Activity 
 // EnrollUserInActivity enrolls a user in a specific schedule
 func (s *ActivitiesService) EnrollUserInActivity(userID, scheduleID int) error {
 	// Get the schedule to check capacity
-	var scheduleDAO dao.Schedules
-	result := mysqlClient.DB.First(&scheduleDAO, scheduleID)
-	if result.Error != nil {
-		return fmt.Errorf("error getting schedule: %w", result.Error)
+	schedule, err := s.mysqlClient.GetScheduleByID(scheduleID)
+	if err != nil {
+		return fmt.Errorf("error getting schedule: %w", err)
 	}
 
 	// Check if there's available capacity
-	if scheduleDAO.Cupo <= 0 {
+	if schedule.Cupo <= 0 {
 		return fmt.Errorf("no available capacity in this schedule")
 	}
 
 	// Check if user is already enrolled
-	var existingEnrollment dao.Inscription
-	result = mysqlClient.DB.Where("usuario_id = ? AND horario_id = ?", userID, scheduleID).First(&existingEnrollment)
-	if result.Error == nil {
+	exists, err := s.mysqlClient.CheckExistingEnrollment(userID, scheduleID)
+	if err != nil {
+		return fmt.Errorf("error checking enrollment: %w", err)
+	}
+	if exists {
 		return fmt.Errorf("user is already enrolled in this schedule")
 	}
 
@@ -236,20 +232,19 @@ func (s *ActivitiesService) EnrollUserInActivity(userID, scheduleID int) error {
 	}
 
 	// Start a transaction
-	tx := mysqlClient.DB.Begin()
+	tx := s.mysqlClient.DB.Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("error starting transaction: %w", tx.Error)
 	}
 
 	// Create enrollment
-	if err := tx.Create(&enrollment).Error; err != nil {
+	if err := s.mysqlClient.CreateEnrollment(enrollment); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("error creating enrollment: %w", err)
 	}
 
 	// Update schedule capacity
-	if err := tx.Model(&dao.Schedules{}).Where("id = ?", scheduleID).
-		Update("cupo", gorm.Expr("cupo - 1")).Error; err != nil {
+	if err := s.mysqlClient.UpdateScheduleCapacity(scheduleID); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("error updating schedule capacity: %w", err)
 	}

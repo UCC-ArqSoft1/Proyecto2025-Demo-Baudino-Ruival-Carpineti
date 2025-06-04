@@ -8,7 +8,6 @@ type Activity struct {
 	Category    string     `json:"category"`
 	Instructor  string     `json:"instructor"`
 	Duration    int        `json:"duration"` // podria ser calculado a partir de horainicio y horafin
-	Capacity    int        `json:"capacity"` // Si manejamos el cupo por Horarios[] no es necesario cupo en actividad
 	Image       string     `json:"image,omitempty"`
 	Status      string     `json:"status"` // "activo", "inactivo"
 	Schedules   []Schedule `json:"schedules" gorm:"foreignKey:ActivityID"`

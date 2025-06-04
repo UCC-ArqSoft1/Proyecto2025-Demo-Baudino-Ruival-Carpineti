@@ -65,12 +65,55 @@ func (c *MySQLClient) GetActivityByID(id int) (dao.Activities, error) {
 	return activity, nil
 }
 
-/*
-func (c *MySQLClient) CreateActivity(activity dao.Activity) (int,error){
-	txn := c.DB.Create(&activity)
-	if txn.Error != nil {
-		return 0, fmt.Errorf("error creating activity: %w", txn.Error)
+
+func (c *MySQLClient) GetUserInscriptions(userID int) ([]dao.Inscription, error) {
+	var inscriptions []dao.Inscription
+	// SELECT * FROM inscriptions WHERE usuario_id = ?
+	result := c.DB.Where("usuario_id = ?", userID).Find(&inscriptions)
+	if result.Error != nil {
+		return nil, fmt.Errorf("error getting user inscriptions: %w", result.Error)
 	}
-	return activity.ID, nil
+	return inscriptions, nil
 }
-*/
+
+func (c *MySQLClient) GetScheduleByID(scheduleID int) (dao.Schedules, error) {
+	var schedule dao.Schedules
+	// SELECT * FROM schedules WHERE id = ? LIMIT 1
+	result := c.DB.First(&schedule, scheduleID)
+	if result.Error != nil {
+		return dao.Schedules{}, fmt.Errorf("error getting schedule: %w", result.Error)
+	}
+	return schedule, nil
+}
+
+func (c *MySQLClient) CheckExistingEnrollment(userID, scheduleID int) (bool, error) {
+	var enrollment dao.Inscription
+	// SELECT * FROM inscriptions WHERE usuario_id = ? AND horario_id = ? LIMIT 1
+	result := c.DB.Where("usuario_id = ? AND horario_id = ?", userID, scheduleID).First(&enrollment)
+	if result.Error == nil {
+		return true, nil
+	}
+	if result.Error == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+	return false, fmt.Errorf("error checking enrollment: %w", result.Error)
+}
+
+func (c *MySQLClient) CreateEnrollment(enrollment dao.Inscription) error {
+	// INSERT INTO inscriptions (usuario_id, horario_id) VALUES (?, ?)
+	result := c.DB.Create(&enrollment)
+	if result.Error != nil {
+		return fmt.Errorf("error creating enrollment: %w", result.Error)
+	}
+	return nil
+}
+
+func (c *MySQLClient) UpdateScheduleCapacity(scheduleID int) error {
+	// UPDATE schedules SET cupo = cupo - 1 WHERE id = ?
+	result := c.DB.Model(&dao.Schedules{}).Where("id = ?", scheduleID).
+		Update("cupo", gorm.Expr("cupo - 1"))
+	if result.Error != nil {
+		return fmt.Errorf("error updating schedule capacity: %w", result.Error)
+	}
+	return nil
+}
