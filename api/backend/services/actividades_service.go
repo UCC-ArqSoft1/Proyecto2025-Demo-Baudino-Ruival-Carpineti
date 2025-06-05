@@ -13,11 +13,19 @@ import (
 
 var mysqlClient = clients.NewMySQLClient()
 
-type ActivitiesService struct {
-	activitiesClient clients.ActivitiesClient
+type ActivitiesClient interface {
+	GetActivities() []domain.Activity
+	GetActivityByID(id int) (domain.Activity, error)
+	SearchActivities(category, keyword string) []domain.Activity
+	GetActivitiesByUserID(userID int) []domain.Activity
+	EnrollUserInActivity(userID, scheduleID int) error
 }
 
-func NewActivitiesService(activitiesClient clients.ActivitiesClient) *ActivitiesService {
+type ActivitiesService struct {
+	activitiesClient ActivitiesClient
+}
+
+func NewActivitiesService(activitiesClient ActivitiesClient) *ActivitiesService {
 	return &ActivitiesService{
 		activitiesClient: activitiesClient,
 	}

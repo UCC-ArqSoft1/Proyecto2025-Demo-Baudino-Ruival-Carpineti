@@ -5,6 +5,8 @@ import (
 	"backend/controllers"
 	"backend/services"
 
+	"backend/db"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +22,7 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-
+	DB := db.InitDB()
 	var mysqlClient = clients.NewMySQLClient()
 
 	// Configuración de servicios y controladores de usuarios
@@ -28,7 +30,7 @@ func main() {
 	userController := controllers.NewUserController(userService)
 
 	// Configuración de servicios y controladores de actividades
-	activitiesClient := clients.NewMySQLActivitiesClient(mysqlClient)
+	activitiesClient := clients.NewMySQLActivitiesClient(DB)
 	activitiesService := services.NewActivitiesService(activitiesClient)
 	activitiesController := controllers.NewActivitiesController(activitiesService)
 
