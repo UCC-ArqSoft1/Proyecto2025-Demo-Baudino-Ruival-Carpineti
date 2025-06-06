@@ -12,7 +12,7 @@ import (
 func main() {
 	router := gin.Default()
 
-	var mysqlClient = clients.NewMySQLClient()
+	//var mysqlClient = clients.NewMySQLClient()
 
 	// Middleware CORS
 	router.Use(cors.New(cors.Config{
@@ -23,16 +23,6 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-<<<<<<< Updated upstream
-	// Configuración de servicios y controladores de usuarios
-	var userService = services.NewUsersService(mysqlClient)
-	userController := controllers.NewUserController(userService)
-
-	// Configuración de servicios y controladores de actividades
-	activitiesClient := clients.NewMySQLActivitiesClient(mysqlClient)
-	activitiesService := services.NewActivitiesService(activitiesClient)
-	activitiesController := controllers.NewActivitiesController(activitiesService)
-=======
 	// Inicializar cliente de base de datos
 	dbClient := clients.NewDBClient()
 
@@ -53,7 +43,6 @@ func main() {
 	// Configuración de servicios y controladores de inscripciones
 	inscriptionsService := services.NewInscriptionsService(inscriptionsClient, schedulesClient)
 	inscriptionsController := controllers.NewInscriptionsController(inscriptionsService)
->>>>>>> Stashed changes
 
 	// Endpoints para socios (punto 2) - No requieren autenticación según el enunciado
 	router.GET("/activities", actividadesController.GetActivities)
