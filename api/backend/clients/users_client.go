@@ -3,13 +3,15 @@ package clients
 import (
 	"backend/dao"
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 type UsersClient struct {
-	db *DBClient
+	db *gorm.DB
 }
 
-func NewUsersClient(db *DBClient) *UsersClient {
+func NewUsersClient(db *gorm.DB) *UsersClient {
 	return &UsersClient{
 		db: db,
 	}
@@ -17,7 +19,7 @@ func NewUsersClient(db *DBClient) *UsersClient {
 
 func (c *UsersClient) GetUserByUsername(username string) (dao.User, error) {
 	var userDAO dao.User
-	result := c.db.DB.First(&userDAO, "username = ?", username)
+	result := c.db.First(&userDAO, "username = ?", username)
 	if result.Error != nil {
 		return dao.User{}, fmt.Errorf("error getting user: %w", result.Error)
 	}

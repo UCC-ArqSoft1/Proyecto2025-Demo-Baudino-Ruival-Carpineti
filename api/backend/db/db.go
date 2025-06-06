@@ -1,4 +1,4 @@
-package clients
+package db
 
 import (
 	"backend/dao"
@@ -8,11 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type DBClient struct {
-	DB *gorm.DB
-}
-
-func NewDBClient() *DBClient {
+func InitDB() *gorm.DB {
 	dsnFormat := "%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8mb4&loc=Local"
 	dsn := fmt.Sprintf(dsnFormat, "root", "Dacota12", "127.0.0.1", 3306, "gimnasio")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -20,7 +16,6 @@ func NewDBClient() *DBClient {
 		panic(fmt.Errorf("error connecting to database: %w", err))
 	}
 
-	// Auto-migrate all models
 	for _, table := range []interface{}{
 		&dao.User{},
 		&dao.Inscription{},
@@ -31,8 +26,5 @@ func NewDBClient() *DBClient {
 			panic(fmt.Errorf("error migrating table: %w", err))
 		}
 	}
-
-	return &DBClient{
-		DB: db,
-	}
+	return db
 }

@@ -8,10 +8,10 @@ import (
 )
 
 type SchedulesClient struct {
-	db *DBClient
+	db *gorm.DB
 }
 
-func NewSchedulesClient(db *DBClient) *SchedulesClient {
+func NewSchedulesClient(db *gorm.DB) *SchedulesClient {
 	return &SchedulesClient{
 		db: db,
 	}
@@ -19,7 +19,7 @@ func NewSchedulesClient(db *DBClient) *SchedulesClient {
 
 func (c *SchedulesClient) GetScheduleByID(scheduleID int) (dao.Schedules, error) {
 	var schedule dao.Schedules
-	result := c.db.DB.First(&schedule, scheduleID)
+	result := c.db.First(&schedule, scheduleID)
 	if result.Error != nil {
 		return dao.Schedules{}, fmt.Errorf("error getting schedule: %w", result.Error)
 	}
@@ -27,7 +27,7 @@ func (c *SchedulesClient) GetScheduleByID(scheduleID int) (dao.Schedules, error)
 }
 
 func (c *SchedulesClient) UpdateScheduleCapacity(scheduleID int) error {
-	result := c.db.DB.Model(&dao.Schedules{}).Where("id = ?", scheduleID).
+	result := c.db.Model(&dao.Schedules{}).Where("id = ?", scheduleID).
 		Update("cupo", gorm.Expr("cupo - 1"))
 	if result.Error != nil {
 		return fmt.Errorf("error updating schedule capacity: %w", result.Error)

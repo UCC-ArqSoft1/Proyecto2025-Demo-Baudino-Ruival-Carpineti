@@ -3,6 +3,7 @@ package main
 import (
 	"backend/clients"
 	"backend/controllers"
+	"backend/db"
 	"backend/services"
 
 	"github.com/gin-contrib/cors"
@@ -23,14 +24,14 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// Inicializar cliente de base de datos
-	dbClient := clients.NewDBClient()
+	//
+	db := db.InitDB()
 
 	// Inicializar clients específicos
-	usersClient := clients.NewUsersClient(dbClient)
-	actividadesClient := clients.NewActividadesClient(dbClient)
-	schedulesClient := clients.NewSchedulesClient(dbClient)
-	inscriptionsClient := clients.NewInscriptionsClient(dbClient)
+	usersClient := clients.NewUsersClient(db)
+	actividadesClient := clients.NewActividadesClient(db)
+	schedulesClient := clients.NewSchedulesClient(db)
+	inscriptionsClient := clients.NewInscriptionsClient(db)
 
 	// Configuración de servicios y controladores de usuarios
 	userService := services.NewUsersService(usersClient)

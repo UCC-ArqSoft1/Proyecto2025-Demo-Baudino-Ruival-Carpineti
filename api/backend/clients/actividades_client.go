@@ -3,13 +3,15 @@ package clients
 import (
 	"backend/dao"
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 type ActividadesClient struct {
-	db *DBClient
+	db *gorm.DB
 }
 
-func NewActividadesClient(db *DBClient) *ActividadesClient {
+func NewActividadesClient(db *gorm.DB) *ActividadesClient {
 	return &ActividadesClient{
 		db: db,
 	}
@@ -17,7 +19,7 @@ func NewActividadesClient(db *DBClient) *ActividadesClient {
 
 func (c *ActividadesClient) GetAllActivities() ([]dao.Activities, error) {
 	var activities []dao.Activities
-	result := c.db.DB.Preload("Horarios").Find(&activities)
+	result := c.db.Preload("Horarios").Find(&activities)
 	if result.Error != nil {
 		return nil, fmt.Errorf("error getting activities: %w", result.Error)
 	}
@@ -26,7 +28,7 @@ func (c *ActividadesClient) GetAllActivities() ([]dao.Activities, error) {
 
 func (c *ActividadesClient) GetActivityByID(id int) (dao.Activities, error) {
 	var activity dao.Activities
-	result := c.db.DB.Preload("Horarios").First(&activity, id)
+	result := c.db.Preload("Horarios").First(&activity, id)
 	if result.Error != nil {
 		return dao.Activities{}, fmt.Errorf("error getting activity by ID: %w", result.Error)
 	}
