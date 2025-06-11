@@ -9,20 +9,31 @@ import (
 	"time"
 )
 
-type ActivitiesService struct {
+// ActivitiesService define la interfaz para el servicio de actividades
+type ActivitiesService interface {
+	GetActivities() []domain.Activity
+	GetActivityByID(id int) (domain.Activity, error)
+	SearchActivities(category, keyword string) []domain.Activity
+	GetActivitiesByUserID(userID int) []domain.Activity
+	EnrollUserInActivity(userID, scheduleID int) error
+}
+
+// ActivitiesServiceImpl implementa la interfaz ActivitiesService
+type ActivitiesServiceImpl struct {
 	actividadesClient  *clients.ActividadesClient
 	inscriptionsClient *clients.InscriptionsClient
 }
 
-func NewActivitiesService(actividadesClient *clients.ActividadesClient, inscriptionsClient *clients.InscriptionsClient) *ActivitiesService {
-	return &ActivitiesService{
+// NewActivitiesService crea una nueva instancia del servicio de actividades
+func NewActivitiesService(actividadesClient *clients.ActividadesClient, inscriptionsClient *clients.InscriptionsClient) ActivitiesService {
+	return &ActivitiesServiceImpl{
 		actividadesClient:  actividadesClient,
 		inscriptionsClient: inscriptionsClient,
 	}
 }
 
 // GetActivities returns all available activities
-func (s *ActivitiesService) GetActivities() []domain.Activity {
+func (s *ActivitiesServiceImpl) GetActivities() []domain.Activity {
 	activitiesDAO, err := s.actividadesClient.GetAllActivities()
 	if err != nil {
 		fmt.Printf("Error getting activities: %v\n", err)
@@ -60,7 +71,7 @@ func (s *ActivitiesService) GetActivities() []domain.Activity {
 }
 
 // GetActivityByID returns an activity by its ID
-func (s *ActivitiesService) GetActivityByID(id int) (domain.Activity, error) {
+func (s *ActivitiesServiceImpl) GetActivityByID(id int) (domain.Activity, error) {
 	activityDAO, err := s.actividadesClient.GetActivityByID(id)
 	if err != nil {
 		return domain.Activity{}, fmt.Errorf("error getting activity by ID: %v", err)
@@ -92,7 +103,7 @@ func (s *ActivitiesService) GetActivityByID(id int) (domain.Activity, error) {
 }
 
 // SearchActivities searches activities by category or keyword
-func (s *ActivitiesService) SearchActivities(category, keyword string) []domain.Activity {
+func (s *ActivitiesServiceImpl) SearchActivities(category, keyword string) []domain.Activity {
 	activitiesDAO, err := s.actividadesClient.GetAllActivities()
 	if err != nil {
 		fmt.Printf("Error getting activities: %v\n", err)
@@ -144,7 +155,7 @@ func (s *ActivitiesService) SearchActivities(category, keyword string) []domain.
 }
 
 // GetActivitiesByUserID returns the activities a user is enrolled in
-func (s *ActivitiesService) GetActivitiesByUserID(userID int) []domain.Activity {
+func (s *ActivitiesServiceImpl) GetActivitiesByUserID(userID int) []domain.Activity {
 	// Get user's inscriptions
 	inscriptions, err := s.inscriptionsClient.GetUserInscriptions(userID)
 	if err != nil {
@@ -205,7 +216,7 @@ func (s *ActivitiesService) GetActivitiesByUserID(userID int) []domain.Activity 
 }
 
 // EnrollUserInActivity enrolls a user in a specific schedule
-func (s *ActivitiesService) EnrollUserInActivity(userID, scheduleID int) error {
+func (s *ActivitiesServiceImpl) EnrollUserInActivity(userID, scheduleID int) error {
 	// Verificar si el horario existe y tiene cupo disponible
 	activity, err := s.actividadesClient.GetActivityByID(scheduleID)
 	if err != nil {

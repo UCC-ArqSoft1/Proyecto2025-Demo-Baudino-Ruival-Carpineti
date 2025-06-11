@@ -11,3 +11,8 @@ type Inscription struct {
 type EnrollRequest struct {
 	ScheduleID int `json:"schedule_id" binding:"required"`
 }
+
+type EnrollmentRequest struct {
+	UserID     int `json:"user_id"`
+	ScheduleID int `json:"schedule_id"`
+}

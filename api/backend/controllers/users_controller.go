@@ -2,25 +2,25 @@ package controllers
 
 import (
 	"backend/domain"
+	"backend/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type UsersService interface {
-	Login(username string, password string) (int, string, error)
-}
-
+// UserController maneja las peticiones HTTP relacionadas con usuarios
 type UserController struct {
-	usersService UsersService
+	usersService services.UsersService
 }
 
-func NewUserController(usersService UsersService) *UserController {
+// NewUserController crea una nueva instancia del controlador de usuarios
+func NewUserController(usersService services.UsersService) *UserController {
 	return &UserController{
 		usersService: usersService,
 	}
 }
 
+// Login maneja la petición de inicio de sesión
 func (c *UserController) Login(ctx *gin.Context) {
 	var request domain.LoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -28,14 +28,11 @@ func (c *UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	userID, token, err := c.usersService.Login(request.Username, request.Password)
+	response, err := c.usersService.Login(request)
 	if err != nil {
 		ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, domain.LoginResponse{
-		UserID: userID,
-		Token:  token,
-	})
+	ctx.JSON(http.StatusOK, response)
 }

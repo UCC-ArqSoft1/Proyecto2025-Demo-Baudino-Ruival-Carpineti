@@ -2,37 +2,51 @@ package services
 
 import (
 	"backend/dao"
+	"backend/domain"
 	"backend/utils"
 	"fmt"
 )
 
+// UsersService define la interfaz para el servicio de usuarios
+type UsersService interface {
+	Login(request domain.LoginRequest) (domain.LoginResponse, error)
+}
+
+// UsersServiceImpl implementa la interfaz UsersService
+type UsersServiceImpl struct {
+	usersClient UsersClient
+}
+
+// UsersClient define la interfaz para el cliente de usuarios
 type UsersClient interface {
 	GetUserByUsername(username string) (dao.User, error)
 }
 
-type UsersService struct {
-	usersClient UsersClient
-}
-
-func NewUsersService(usersClient UsersClient) *UsersService {
-	return &UsersService{
+// NewUsersService crea una nueva instancia del servicio de usuarios
+func NewUsersService(usersClient UsersClient) UsersService {
+	return &UsersServiceImpl{
 		usersClient: usersClient,
 	}
 }
 
-func (s *UsersService) Login(username, password string) (int, string, error) { //devuelve ID(usuario), token generado y error
-	userDAO, err := s.usersClient.GetUserByUsername(username)
+// Login implementa la autenticación de usuarios
+func (s *UsersServiceImpl) Login(request domain.LoginRequest) (domain.LoginResponse, error) {
+	userDAO, err := s.usersClient.GetUserByUsername(request.Username)
 	if err != nil {
-		return 0, "", fmt.Errorf("error getting user: %w", err)
+		return domain.LoginResponse{}, fmt.Errorf("error getting user: %w", err)
 	}
 
-	if utils.HashSHA256(password) != userDAO.PasswordHash {
-		return 0, "", fmt.Errorf("invalid credentials")
+	if utils.HashSHA256(request.Password) != userDAO.PasswordHash {
+		return domain.LoginResponse{}, fmt.Errorf("invalid credentials")
 	}
 
 	token, err := utils.GenerateJWT(userDAO.ID)
 	if err != nil {
-		return 0, "", fmt.Errorf("error generating token: %w", err)
+		return domain.LoginResponse{}, fmt.Errorf("error generating token: %w", err)
 	}
-	return userDAO.ID, token, nil
+
+	return domain.LoginResponse{
+		UserID: userDAO.ID,
+		Token:  token,
+	}, nil
 }

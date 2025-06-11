@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"backend/domain"
 	"backend/services"
 	"net/http"
 	"strconv"
@@ -8,16 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// InscriptionsController maneja las peticiones HTTP relacionadas con inscripciones
 type InscriptionsController struct {
-	inscriptionsService *services.InscriptionsService
+	inscriptionsService services.InscriptionsService
 }
 
-func NewInscriptionsController(inscriptionsService *services.InscriptionsService) *InscriptionsController {
+// NewInscriptionsController crea una nueva instancia del controlador de inscripciones
+func NewInscriptionsController(inscriptionsService services.InscriptionsService) *InscriptionsController {
 	return &InscriptionsController{
 		inscriptionsService: inscriptionsService,
 	}
 }
 
+// EnrollInActivity maneja la petición para inscribir a un usuario en una actividad
 func (c *InscriptionsController) EnrollInActivity(ctx *gin.Context) {
 	userID, err := strconv.Atoi(ctx.Param("userID"))
 	if err != nil {
@@ -25,10 +29,7 @@ func (c *InscriptionsController) EnrollInActivity(ctx *gin.Context) {
 		return
 	}
 
-	var request struct {
-		ScheduleID int `json:"schedule_id" binding:"required"`
-	}
-
+	var request domain.EnrollmentRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

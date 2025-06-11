@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"backend/domain"
 	"backend/services"
 	"net/http"
 	"strconv"
@@ -8,19 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ActivitiesController maneja las peticiones HTTP relacionadas con actividades
 type ActivitiesController struct {
-	service *services.ActivitiesService
+	service services.ActivitiesService
 }
 
-func NewActivitiesController(service *services.ActivitiesService) *ActivitiesController {
+// NewActivitiesController crea una nueva instancia del controlador de actividades
+func NewActivitiesController(service services.ActivitiesService) *ActivitiesController {
 	return &ActivitiesController{service: service}
 }
 
+// GetActivities maneja la petición para obtener todas las actividades
 func (c *ActivitiesController) GetActivities(ctx *gin.Context) {
 	activities := c.service.GetActivities()
 	ctx.JSON(http.StatusOK, activities)
 }
 
+// GetActivityByID maneja la petición para obtener una actividad por su ID
 func (c *ActivitiesController) GetActivityByID(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -37,6 +42,7 @@ func (c *ActivitiesController) GetActivityByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, activity)
 }
 
+// SearchActivities maneja la petición para buscar actividades
 func (c *ActivitiesController) SearchActivities(ctx *gin.Context) {
 	category := ctx.Query("category")
 	keyword := ctx.Query("keyword")
@@ -45,6 +51,7 @@ func (c *ActivitiesController) SearchActivities(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, activities)
 }
 
+// GetUserActivities maneja la petición para obtener las actividades de un usuario
 func (c *ActivitiesController) GetUserActivities(ctx *gin.Context) {
 	userID, err := strconv.Atoi(ctx.Param("userID"))
 	if err != nil {
@@ -56,6 +63,7 @@ func (c *ActivitiesController) GetUserActivities(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, activities)
 }
 
+// EnrollInActivity maneja la petición para inscribir a un usuario en una actividad
 func (c *ActivitiesController) EnrollInActivity(ctx *gin.Context) {
 	userID, err := strconv.Atoi(ctx.Param("userID"))
 	if err != nil {
@@ -63,10 +71,7 @@ func (c *ActivitiesController) EnrollInActivity(ctx *gin.Context) {
 		return
 	}
 
-	var request struct {
-		ScheduleID int `json:"schedule_id" binding:"required"`
-	}
-
+	var request domain.EnrollmentRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -3,23 +3,33 @@ package services
 import (
 	"backend/clients"
 	"backend/dao"
+	"backend/domain"
 	"fmt"
 	"time"
 )
 
-type InscriptionsService struct {
+// InscriptionsService define la interfaz para el servicio de inscripciones
+type InscriptionsService interface {
+	EnrollUserInActivity(userID, scheduleID int) error
+	GetUserInscriptions(userID int) ([]domain.Inscription, error)
+}
+
+// InscriptionsServiceImpl implementa la interfaz InscriptionsService
+type InscriptionsServiceImpl struct {
 	inscriptionsClient *clients.InscriptionsClient
 	schedulesClient    *clients.SchedulesClient
 }
 
-func NewInscriptionsService(inscriptionsClient *clients.InscriptionsClient, schedulesClient *clients.SchedulesClient) *InscriptionsService {
-	return &InscriptionsService{
+// NewInscriptionsService crea una nueva instancia del servicio de inscripciones
+func NewInscriptionsService(inscriptionsClient *clients.InscriptionsClient, schedulesClient *clients.SchedulesClient) InscriptionsService {
+	return &InscriptionsServiceImpl{
 		inscriptionsClient: inscriptionsClient,
 		schedulesClient:    schedulesClient,
 	}
 }
 
-func (s *InscriptionsService) EnrollUserInActivity(userID, scheduleID int) error {
+// EnrollUserInActivity inscribe a un usuario en una actividad
+func (s *InscriptionsServiceImpl) EnrollUserInActivity(userID, scheduleID int) error {
 	// Get the schedule to check capacity
 	schedule, err := s.schedulesClient.GetScheduleByID(scheduleID)
 	if err != nil {
@@ -60,6 +70,21 @@ func (s *InscriptionsService) EnrollUserInActivity(userID, scheduleID int) error
 	return nil
 }
 
-func (s *InscriptionsService) GetUserInscriptions(userID int) ([]dao.Inscription, error) {
-	return s.inscriptionsClient.GetUserInscriptions(userID)
+// GetUserInscriptions obtiene las inscripciones de un usuario
+func (s *InscriptionsServiceImpl) GetUserInscriptions(userID int) ([]domain.Inscription, error) {
+	inscriptionsDAO, err := s.inscriptionsClient.GetUserInscriptions(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	inscriptions := make([]domain.Inscription, len(inscriptionsDAO))
+	for i, inscriptionDAO := range inscriptionsDAO {
+		inscriptions[i] = domain.Inscription{
+			ID:             inscriptionDAO.ID,
+			UserID:         inscriptionDAO.UsuarioID,
+			ScheduleID:     inscriptionDAO.HorarioID,
+			EnrollmentDate: inscriptionDAO.FechaInscripcion,
+		}
+	}
+	return inscriptions, nil
 }
