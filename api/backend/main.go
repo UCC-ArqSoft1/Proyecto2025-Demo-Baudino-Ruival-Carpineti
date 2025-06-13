@@ -13,8 +13,6 @@ import (
 func main() {
 	router := gin.Default()
 
-	//var mysqlClient = clients.NewMySQLClient()
-
 	// Middleware CORS
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
@@ -24,7 +22,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	//
+	// Inicializar la base de datos
 	db := db.InitDB()
 
 	// Inicializar clients específicos
