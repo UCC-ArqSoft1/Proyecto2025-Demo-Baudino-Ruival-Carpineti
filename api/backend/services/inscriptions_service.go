@@ -50,7 +50,7 @@ func (s *InscriptionsServiceImpl) EnrollUserInActivity(userID, scheduleID int) e
 
 	// Check if there's available capacity
 	if schedule.Cupo <= 0 {
-		return fmt.Errorf("no available capacity in this schedule")
+		return fmt.Errorf("no hay cupo disponible en este horario")
 	}
 
 	// Check if user is already enrolled
@@ -59,7 +59,7 @@ func (s *InscriptionsServiceImpl) EnrollUserInActivity(userID, scheduleID int) e
 		return fmt.Errorf("error checking enrollment: %w", err)
 	}
 	if exists {
-		return fmt.Errorf("user is already enrolled in this schedule")
+		return fmt.Errorf("ya estas inscripto en este horario")
 	}
 
 	// Create the enrollment

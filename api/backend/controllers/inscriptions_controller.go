@@ -40,5 +40,5 @@ func (c *InscriptionsController) EnrollInActivity(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "successfully enrolled in activity"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Inscripcion exitosa"})
 }
