@@ -5,28 +5,27 @@ import "./Home.css";
 function Home() {
   const [activities, setActivities] = useState([]);
   const [search, setSearch] = useState("");
-  const [filteredActivities, setFilteredActivities] = useState([]);
 
   useEffect(() => {
     fetch("http://localhost:8080/activities")
       .then((res) => res.json())
-      .then((data) => {
-        setActivities(data);
-        setFilteredActivities(data);
-      })
+      .then((data) => setActivities(data))
       .catch((err) => console.error("Error al cargar actividades", err));
   }, []);
 
   const handleSearch = () => {
-    const results = activities.filter((a) =>
-      a.title.toLowerCase().includes(search.toLowerCase())
-    );
-    setFilteredActivities(results);
+    fetch(`http://localhost:8080/activities/search?keyword=${search}`)
+      .then((res) => res.json())
+      .then((data) => setActivities(data))
+      .catch((err) => console.error("Error al buscar", err));
   };
 
-  const handleReset = () => {
+  const handleClear = () => {
     setSearch("");
-    setFilteredActivities(activities);
+    fetch("http://localhost:8080/activities")
+      .then((res) => res.json())
+      .then((data) => setActivities(data))
+      .catch((err) => console.error("Error al cargar actividades", err));
   };
 
   return (
@@ -41,18 +40,26 @@ function Home() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <button onClick={handleSearch}>Buscar</button>
-        <button onClick={handleReset}>Limpiar</button>
+        <button onClick={handleClear}>Limpiar</button>
       </div>
 
       <div className="activities-grid">
-        {filteredActivities.length === 0 ? (
-          <p className="no-activities">No se encontraron actividades.</p>
+        {activities.length === 0 ? (
+          <p className="no-activities">No hay actividades disponibles.</p>
         ) : (
-          filteredActivities.map((act) => (
-            <Link to={`/activities/${act.id}`} key={act.id} className="activity-card">
+          activities.map((act) => (
+            <Link
+              to={`/activities/${act.id}`}
+              key={act.id}
+              className={`activity-card ${act.category.toLowerCase()}`}
+            >
               <h2>{act.title}</h2>
-              <p><strong>Categoría:</strong> {act.category}</p>
-              <p><strong>Instructor:</strong> {act.instructor}</p>
+              <p>
+                <strong>Categoría:</strong> {act.category}
+              </p>
+              <p>
+                <strong>Instructor:</strong> {act.instructor}
+              </p>
             </Link>
           ))
         )}

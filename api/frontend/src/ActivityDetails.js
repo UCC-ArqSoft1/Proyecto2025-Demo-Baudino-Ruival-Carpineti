@@ -24,16 +24,37 @@ function ActivityDetails() {
       body: JSON.stringify({ schedule_id: scheduleId }),
     })
       .then((res) => {
-        if (!res.ok) return res.json().then(err => { throw new Error(err.error || "Inscripción fallida") });
+        if (!res.ok) {
+          return res.json().then(err => { throw new Error(err.error || "Inscripción fallida") });
+        }
         return res.json();
       })
       .then((data) => {
-        setModal({ show: true, message: data.message, success: true });
+        setModal({
+          show: true,
+          message: "Inscripción exitosa ✅",
+          success: true,
+        });
         return fetch(`http://localhost:8080/activities/${id}`);
       })
       .then((res) => res.json())
       .then((updated) => setActivity(updated))
-      .catch((err) => setModal({ show: true, message: err.message, success: false }));
+      .catch((err) => {
+        let msg = err.message.toLowerCase();
+        let translated = "Inscripción fallida.";
+
+        if (msg.includes("already enrolled")) {
+          translated = "Ya estás inscripto en esta actividad.";
+        } else if (msg.includes("no available slots") || msg.includes("sin cupos")) {
+          translated = "No hay cupos disponibles para este horario.";
+        }
+
+        setModal({
+          show: true,
+          message: translated,
+          success: false,
+        });
+      });
   };
 
   const getBackground = () => {
@@ -43,7 +64,7 @@ function ActivityDetails() {
     return "none";
   };
 
-  if (!activity) return <p>Cargando actividad...</p>;
+  if (!activity) return <p style={{ color: "white", padding: "20px" }}>Cargando actividad...</p>;
 
   return (
     <div style={{ padding: "30px", color: "white" }}>
