@@ -7,16 +7,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// ActividadesClient implementa la interfaz services.ActivitiesClient
 type ActividadesClient struct {
 	db *gorm.DB
 }
 
+// NewActividadesClient crea una nueva instancia del cliente de actividades
 func NewActividadesClient(db *gorm.DB) *ActividadesClient {
 	return &ActividadesClient{
 		db: db,
 	}
 }
 
+// GetAllActivities obtiene todas las actividades
 func (c *ActividadesClient) GetAllActivities() ([]dao.Activities, error) {
 	var activities []dao.Activities
 	// SELECT * FROM activities
@@ -27,6 +30,7 @@ func (c *ActividadesClient) GetAllActivities() ([]dao.Activities, error) {
 	return activities, nil
 }
 
+// GetActivityByID obtiene una actividad por su ID
 func (c *ActividadesClient) GetActivityByID(id int) (dao.Activities, error) {
 	var activity dao.Activities
 	// SELECT * FROM activities WHERE id = ?
