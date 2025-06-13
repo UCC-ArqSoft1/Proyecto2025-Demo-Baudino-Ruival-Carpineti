@@ -31,22 +31,33 @@ func NewUsersService(usersClient UsersClient) UsersService {
 
 // Login implementa la autenticación de usuarios
 func (s *UsersServiceImpl) Login(request domain.LoginRequest) (domain.LoginResponse, error) {
+	// 1. Obtener datos desde DAO
 	userDAO, err := s.usersClient.GetUserByUsername(request.Username)
 	if err != nil {
 		return domain.LoginResponse{}, fmt.Errorf("error getting user: %w", err)
 	}
 
-	if utils.HashSHA256(request.Password) != userDAO.PasswordHash {
+	// 2. Convertir DAO a Domain
+	userDomain := domain.User{
+		ID:           userDAO.ID,
+		Username:     userDAO.Username,
+		PasswordHash: userDAO.PasswordHash,
+	}
+
+	// 3. Validar contraseña (método de domain.User)
+	if !userDomain.ValidatePassword(request.Password) {
 		return domain.LoginResponse{}, fmt.Errorf("invalid credentials")
 	}
 
-	token, err := utils.GenerateJWT(userDAO.ID)
+	// 4. Generar token
+	token, err := utils.GenerateJWT(userDomain.ID)
 	if err != nil {
 		return domain.LoginResponse{}, fmt.Errorf("error generating token: %w", err)
 	}
 
+	// 5. Devolver respuesta (solo con datos necesarios)
 	return domain.LoginResponse{
-		UserID: userDAO.ID,
+		UserID: userDomain.ID,
 		Token:  token,
 	}, nil
 }

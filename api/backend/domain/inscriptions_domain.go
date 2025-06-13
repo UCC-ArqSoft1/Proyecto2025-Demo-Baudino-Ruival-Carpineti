@@ -7,11 +7,6 @@ type Inscription struct {
 	EnrollmentDate string `json:"enrollment_date"`
 }
 
-// EnrollRequest representa la estructura de la solicitud para inscribirse en una actividad
-type EnrollRequest struct {
-	ScheduleID int `json:"schedule_id" binding:"required"`
-}
-
 type EnrollmentRequest struct {
 	UserID     int `json:"user_id"`
 	ScheduleID int `json:"schedule_id"`

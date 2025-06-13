@@ -1,7 +1,6 @@
 package services
 
 import (
-	"backend/clients"
 	"backend/dao"
 	"backend/domain"
 	"fmt"
@@ -14,14 +13,27 @@ type InscriptionsService interface {
 	GetUserInscriptions(userID int) ([]domain.Inscription, error)
 }
 
+// InscriptionsClient define la interfaz para el cliente de inscripciones
+type InscriptionsClient interface {
+	GetUserInscriptions(userID int) ([]dao.Inscription, error)
+	CheckExistingEnrollment(userID, scheduleID int) (bool, error)
+	CreateEnrollment(enrollment dao.Inscription) error
+}
+
+// SchedulesClient define la interfaz para el cliente de horarios
+type SchedulesClient interface {
+	GetScheduleByID(id int) (dao.Schedules, error)
+	UpdateScheduleCapacity(id int) error
+}
+
 // InscriptionsServiceImpl implementa la interfaz InscriptionsService
 type InscriptionsServiceImpl struct {
-	inscriptionsClient *clients.InscriptionsClient
-	schedulesClient    *clients.SchedulesClient
+	inscriptionsClient InscriptionsClient
+	schedulesClient    SchedulesClient
 }
 
 // NewInscriptionsService crea una nueva instancia del servicio de inscripciones
-func NewInscriptionsService(inscriptionsClient *clients.InscriptionsClient, schedulesClient *clients.SchedulesClient) InscriptionsService {
+func NewInscriptionsService(inscriptionsClient InscriptionsClient, schedulesClient SchedulesClient) InscriptionsService {
 	return &InscriptionsServiceImpl{
 		inscriptionsClient: inscriptionsClient,
 		schedulesClient:    schedulesClient,

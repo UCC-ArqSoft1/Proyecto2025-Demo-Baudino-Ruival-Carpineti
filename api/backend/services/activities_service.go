@@ -1,12 +1,10 @@
 package services
 
 import (
-	"backend/clients"
 	"backend/dao"
 	"backend/domain"
 	"fmt"
 	"strings"
-	"time"
 )
 
 // ActivitiesService define la interfaz para el servicio de actividades
@@ -15,20 +13,25 @@ type ActivitiesService interface {
 	GetActivityByID(id int) (domain.Activity, error)
 	SearchActivities(category, keyword string) []domain.Activity
 	GetActivitiesByUserID(userID int) []domain.Activity
-	EnrollUserInActivity(userID, scheduleID int) error
+}
+
+// ActivitiesClient define la interfaz para el cliente de actividades
+type ActivitiesClient interface {
+	GetAllActivities() ([]dao.Activities, error)
+	GetActivityByID(id int) (dao.Activities, error)
 }
 
 // ActivitiesServiceImpl implementa la interfaz ActivitiesService
 type ActivitiesServiceImpl struct {
-	actividadesClient  *clients.ActividadesClient
-	inscriptionsClient *clients.InscriptionsClient
+	actividadesClient   ActivitiesClient
+	inscriptionsService InscriptionsService // Inyección de dependencia
 }
 
 // NewActivitiesService crea una nueva instancia del servicio de actividades
-func NewActivitiesService(actividadesClient *clients.ActividadesClient, inscriptionsClient *clients.InscriptionsClient) ActivitiesService {
+func NewActivitiesService(actividadesClient ActivitiesClient, inscriptionsService InscriptionsService) ActivitiesService {
 	return &ActivitiesServiceImpl{
-		actividadesClient:  actividadesClient,
-		inscriptionsClient: inscriptionsClient,
+		actividadesClient:   actividadesClient,
+		inscriptionsService: inscriptionsService,
 	}
 }
 
@@ -156,8 +159,8 @@ func (s *ActivitiesServiceImpl) SearchActivities(category, keyword string) []dom
 
 // GetActivitiesByUserID returns the activities a user is enrolled in
 func (s *ActivitiesServiceImpl) GetActivitiesByUserID(userID int) []domain.Activity {
-	// Get user's inscriptions
-	inscriptions, err := s.inscriptionsClient.GetUserInscriptions(userID)
+	// Usar el servicio de inscripciones para obtener las inscripciones del usuario
+	inscriptions, err := s.inscriptionsService.GetUserInscriptions(userID)
 	if err != nil {
 		fmt.Printf("Error getting user inscriptions: %v\n", err)
 		return []domain.Activity{}
@@ -173,7 +176,7 @@ func (s *ActivitiesServiceImpl) GetActivitiesByUserID(userID int) []domain.Activ
 	// Create a map of schedule IDs the user is enrolled in
 	enrolledScheduleIDs := make(map[int]bool)
 	for _, inscription := range inscriptions {
-		enrolledScheduleIDs[inscription.HorarioID] = true
+		enrolledScheduleIDs[inscription.ScheduleID] = true
 	}
 
 	// Filter activities that have schedules the user is enrolled in
@@ -213,85 +216,4 @@ func (s *ActivitiesServiceImpl) GetActivitiesByUserID(userID int) []domain.Activ
 	}
 
 	return userActivities
-}
-
-// EnrollUserInActivity enrolls a user in a specific schedule
-func (s *ActivitiesServiceImpl) EnrollUserInActivity(userID, scheduleID int) error {
-	// Verificar si el horario existe y tiene cupo disponible
-	activity, err := s.actividadesClient.GetActivityByID(scheduleID)
-	if err != nil {
-		return fmt.Errorf("error getting activity: %v", err)
-	}
-
-	// Verificar si el horario tiene cupo disponible
-	var schedule *domain.Schedule
-	for _, s := range activity.Horarios {
-		if s.ID == scheduleID {
-			schedule = &domain.Schedule{
-				ID:         s.ID,
-				ActivityID: s.ActividadID,
-				WeekDay:    s.DiaSemana,
-				StartTime:  s.HoraInicio,
-				EndTime:    s.HoraFin,
-				Capacity:   s.Cupo,
-			}
-			break
-		}
-	}
-
-	if schedule == nil {
-		return fmt.Errorf("schedule not found")
-	}
-
-	// Verificar si el usuario ya está inscrito en este horario
-	exists, err := s.inscriptionsClient.CheckExistingEnrollment(userID, scheduleID)
-	if err != nil {
-		return fmt.Errorf("error checking enrollment: %v", err)
-	}
-	if exists {
-		return fmt.Errorf("user is already enrolled in this schedule")
-	}
-
-	// Crear la inscripción
-	enrollment := dao.Inscription{
-		UsuarioID:        userID,
-		HorarioID:        scheduleID,
-		FechaInscripcion: time.Now().Format("2006-01-02 15:04:05"),
-	}
-
-	/*
-			// Start a transaction
-		tx := s.mysqlClient.DB.Begin()
-		if tx.Error != nil {
-			return fmt.Errorf("error starting transaction: %w", tx.Error)
-		}
-
-		// Create enrollment
-		if err := s.mysqlClient.CreateEnrollment(enrollment); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("error creating enrollment: %w", err)
-		}
-
-		// Update schedule capacity
-		if err := s.mysqlClient.UpdateScheduleCapacity(scheduleID); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("error updating schedule capacity: %w", err)
-		}
-
-		func (s *ServicioActividades) FinalizarActividad(tx *gorm.DB, enrollment domain.Enrollment) error {
-			// Intentar hacer commit
-			if err := tx.Commit().Error; err != nil {
-				return fmt.Errorf("error committing transaction: %w", err)
-			}
-
-			// Crear inscripción luego del commit exitoso
-			err := s.inscriptionsClient.CreateEnrollment(enrollment)
-	*/
-
-	err = s.inscriptionsClient.CreateEnrollment(enrollment)
-	if err != nil {
-		return fmt.Errorf("error creating enrollment: %v", err)
-	}
-
-	return nil
 }
