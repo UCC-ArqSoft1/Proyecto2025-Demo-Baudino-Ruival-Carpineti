@@ -1,13 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Modal from "./Modal";
+import { getCookie, decodeJWT } from "./utils/cookies"; 
 
 function ActivityDetails() {
   const { id } = useParams();
   const [activity, setActivity] = useState(null);
   const [modal, setModal] = useState({ show: false, message: "", success: true });
+  const [userId, setUserId] = useState(null); 
 
   useEffect(() => {
+    // Obtener userID del token
+    const token = getCookie('token');
+    if (token) {
+      const payload = decodeJWT(token);
+      if (payload && payload.jti) {
+        setUserId(parseInt(payload.jti));
+      }
+    }
+
+    
     fetch(`http://localhost:8080/activities/${id}`)
       .then((res) => res.json())
       .then((data) => setActivity(data))
@@ -15,7 +27,12 @@ function ActivityDetails() {
   }, [id]);
 
   const handleEnroll = (scheduleId) => {
-    const userId = 1;
+    if (!userId) { // Validar sesión
+      setModal({ show: true, message: "Debes iniciar sesión para inscribirte", success: false });
+      return;
+    }
+
+    // Usar userId dinámico
     fetch(`http://localhost:8080/users/${userId}/enrollments`, {
       method: "POST",
       headers: {
@@ -24,37 +41,16 @@ function ActivityDetails() {
       body: JSON.stringify({ schedule_id: scheduleId }),
     })
       .then((res) => {
-        if (!res.ok) {
-          return res.json().then(err => { throw new Error(err.error || "Inscripción fallida") });
-        }
+        if (!res.ok) return res.json().then(err => { throw new Error(err.error || "Inscripción fallida") });
         return res.json();
       })
       .then((data) => {
-        setModal({
-          show: true,
-          message: "Inscripción exitosa ✅",
-          success: true,
-        });
+        setModal({ show: true, message: data.message, success: true });
         return fetch(`http://localhost:8080/activities/${id}`);
       })
       .then((res) => res.json())
       .then((updated) => setActivity(updated))
-      .catch((err) => {
-        let msg = err.message.toLowerCase();
-        let translated = "Inscripción fallida.";
-
-        if (msg.includes("already enrolled")) {
-          translated = "Ya estás inscripto en esta actividad.";
-        } else if (msg.includes("no available slots") || msg.includes("sin cupos")) {
-          translated = "No hay cupos disponibles para este horario.";
-        }
-
-        setModal({
-          show: true,
-          message: translated,
-          success: false,
-        });
-      });
+      .catch((err) => setModal({ show: true, message: err.message, success: false }));
   };
 
   const getBackground = () => {
