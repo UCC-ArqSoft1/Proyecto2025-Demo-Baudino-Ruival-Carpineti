@@ -1,20 +1,30 @@
 package controllers
 
 import (
-	"backend/services"
+	"backend/domain"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
+// ActivitiesService define la interfaz para el servicio de actividades
+// Declarada aquí porque el controller es quien la usa
+// Así se sigue la buena práctica recomendada
+type ActivitiesService interface {
+	GetActivities() []domain.Activity
+	GetActivityByID(id int) (domain.Activity, error)
+	SearchActivities(category, keyword string) []domain.Activity
+	GetActivitiesByUserID(userID int) []domain.Activity
+}
+
 // ActivitiesController maneja las peticiones HTTP relacionadas con actividades
 type ActivitiesController struct {
-	activitiesService services.ActivitiesService
+	activitiesService ActivitiesService
 }
 
 // NewActivitiesController crea una nueva instancia del controlador de actividades
-func NewActivitiesController(activitiesService services.ActivitiesService) *ActivitiesController {
+func NewActivitiesController(activitiesService ActivitiesService) *ActivitiesController {
 	return &ActivitiesController{
 		activitiesService: activitiesService,
 	}

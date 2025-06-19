@@ -7,14 +7,6 @@ import (
 	"strings"
 )
 
-// ActivitiesService define la interfaz para el servicio de actividades
-type ActivitiesService interface {
-	GetActivities() []domain.Activity
-	GetActivityByID(id int) (domain.Activity, error)
-	SearchActivities(category, keyword string) []domain.Activity
-	GetActivitiesByUserID(userID int) []domain.Activity
-}
-
 // ActivitiesClient define la interfaz para el cliente de actividades
 type ActivitiesClient interface {
 	GetAllActivities() ([]dao.Activities, error)
@@ -28,7 +20,7 @@ type ActivitiesServiceImpl struct {
 }
 
 // NewActivitiesService crea una nueva instancia del servicio de actividades
-func NewActivitiesService(actividadesClient ActivitiesClient, inscriptionsService InscriptionsService) ActivitiesService {
+func NewActivitiesService(actividadesClient ActivitiesClient, inscriptionsService InscriptionsService) *ActivitiesServiceImpl {
 	return &ActivitiesServiceImpl{
 		actividadesClient:   actividadesClient,
 		inscriptionsService: inscriptionsService,

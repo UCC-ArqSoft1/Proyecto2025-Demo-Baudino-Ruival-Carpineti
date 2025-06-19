@@ -32,11 +32,13 @@ function ActivityDetails() {
       return;
     }
 
-    // Usar userId dinámico
+    const token = getCookie('token');
+
     fetch(`http://localhost:8080/users/${userId}/enrollments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": token,
       },
       body: JSON.stringify({ schedule_id: scheduleId }),
     })
