@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCookie } from "./utils/cookies";
 import "./Login.css";
 
 const Login = () => {
@@ -7,6 +8,13 @@ const Login = () => {
     const [password, setPassword] = useState(""); // corregido
     const [error, setError] = useState("");
     const navigate = useNavigate();
+  
+    useEffect(() => {
+      const token = getCookie("token");
+      if (token) {
+        navigate("/activities");
+      }
+    }, [navigate]);
   
     const handleLogin = async (e) => {
       e.preventDefault();

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
 
 function Home() {
   const [activities, setActivities] = useState([]);
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:8080/activities")
@@ -26,6 +27,11 @@ function Home() {
       .then((res) => res.json())
       .then((data) => setActivities(data))
       .catch((err) => console.error("Error al cargar actividades", err));
+  };
+
+  const handleLogout = () => {
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    navigate("/");
   };
 
   return (
@@ -64,6 +70,7 @@ function Home() {
           ))
         )}
       </div>
+      <button className="logout-btn" onClick={handleLogout}>Cerrar sesión</button>
     </div>
   );
 }

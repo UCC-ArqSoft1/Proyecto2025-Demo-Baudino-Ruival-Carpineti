@@ -5,10 +5,28 @@ import (
 	"backend/controllers"
 	"backend/db"
 	"backend/services"
+	"backend/utils"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
+
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenString := c.GetHeader("Authorization")
+		if tokenString == "" {
+			c.AbortWithStatusJSON(401, gin.H{"error": "No autorizado"})
+			return
+		}
+		claims, err := utils.ValidateJWT(tokenString)
+		if err != nil {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Token inválido o expirado"})
+			return
+		}
+		c.Set("userID", claims.ID)
+		c.Next()
+	}
+}
 
 func main() {
 	router := gin.Default()
@@ -48,8 +66,8 @@ func main() {
 	router.GET("/activities", actividadesController.GetActivities)
 	router.GET("/activities/:id", actividadesController.GetActivityByID)
 	router.GET("/activities/search", actividadesController.SearchActivities)
-	router.GET("/users/:userID/activities", actividadesController.GetUserActivities)
-	router.POST("/users/:userID/enrollments", inscriptionsController.EnrollInActivity)
+	router.GET("/users/:userID/activities", AuthMiddleware(), actividadesController.GetUserActivities)
+	router.POST("/users/:userID/enrollments", AuthMiddleware(), inscriptionsController.EnrollInActivity)
 
 	// Endpoints para autenticacion de usuarios (punto 1) - Requiere autenticación
 	router.POST("/login", userController.Login)

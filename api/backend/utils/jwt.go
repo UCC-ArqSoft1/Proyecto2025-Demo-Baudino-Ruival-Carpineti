@@ -37,3 +37,14 @@ func GenerateJWT(userID int) (string, error) {
 
 	return tokenString, nil
 }
+
+func ValidateJWT(tokenString string) (*jwt.RegisteredClaims, error) {
+	claims := &jwt.RegisteredClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtSecret), nil
+	})
+	if err != nil || !token.Valid {
+		return nil, fmt.Errorf("token inválido o expirado: %w", err)
+	}
+	return claims, nil
+}
