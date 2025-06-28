@@ -15,3 +15,10 @@ export function getCookie(name) {
       return null;
     }
   }
+
+export function getUserRole() {
+  const token = getCookie("token");
+  if (!token) return null;
+  const payload = decodeJWT(token);
+  return payload?.rol || payload?.role || null;
+}

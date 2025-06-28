@@ -42,6 +42,7 @@ func (s *UsersServiceImpl) Login(request domain.LoginRequest) (domain.LoginRespo
 		ID:           userDAO.ID,
 		Username:     userDAO.Username,
 		PasswordHash: userDAO.PasswordHash,
+		Role:         userDAO.Rol,
 	}
 
 	// 3. Validar contraseña (método de domain.User)
@@ -50,7 +51,7 @@ func (s *UsersServiceImpl) Login(request domain.LoginRequest) (domain.LoginRespo
 	}
 
 	// 4. Generar token
-	token, err := utils.GenerateJWT(userDomain.ID)
+	token, err := utils.GenerateJWT(userDomain.ID, userDomain.Role)
 	if err != nil {
 		return domain.LoginResponse{}, fmt.Errorf("error generating token: %w", err)
 	}

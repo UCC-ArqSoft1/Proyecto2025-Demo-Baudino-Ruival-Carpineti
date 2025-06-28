@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Modal from "./Modal";
-import { getCookie, decodeJWT } from "./utils/cookies"; 
+import { getCookie, decodeJWT, getUserRole } from "./utils/cookies"; 
 
 function ActivityDetails() {
   const { id } = useParams();
@@ -62,6 +62,22 @@ function ActivityDetails() {
     return "none";
   };
 
+  const isAdmin = getUserRole() === "admin";
+
+  const handleDelete = async () => {
+    const token = getCookie('token');
+    if (!window.confirm('¿Seguro que deseas eliminar esta actividad?')) return;
+    const res = await fetch(`http://localhost:8080/admin/activities/${activity.id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': token }
+    });
+    if (res.ok) {
+      window.location.href = '/activities';
+    } else {
+      alert('Error al eliminar actividad');
+    }
+  };
+
   if (!activity) return <p style={{ color: "white", padding: "20px" }}>Cargando actividad...</p>;
 
   return (
@@ -111,6 +127,13 @@ function ActivityDetails() {
           </div>
         ))}
       </div>
+
+      {isAdmin && (
+        <div style={{marginTop: 20}}>
+          <button onClick={() => window.location.href = `/admin/edit-activity/${activity.id}`}>Editar</button>
+          <button onClick={handleDelete} style={{marginLeft: 10, background: 'red', color: 'white'}}>Eliminar</button>
+        </div>
+      )}
 
       <Modal
         show={modal.show}

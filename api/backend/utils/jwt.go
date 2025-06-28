@@ -12,18 +12,19 @@ const (
 	jwtSecret   = "jwtSecret"
 )
 
-func GenerateJWT(userID int) (string, error) {
+func GenerateJWT(userID int, role string) (string, error) {
 	//Setear expiracion
 	expirationTime := time.Now().Add(jwtDuration)
 
-	//Condtruir los claims
-	claims := &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(expirationTime),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		NotBefore: jwt.NewNumericDate(time.Now()),
-		Issuer:    "backend",
-		Subject:   "auth",
-		ID:        fmt.Sprintf("%d", userID),
+	// Construir los claims personalizados
+	claims := jwt.MapClaims{
+		"jti": fmt.Sprintf("%d", userID),
+		"rol": role,
+		"exp": expirationTime.Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": "backend",
+		"sub": "auth",
 	}
 
 	//Crear el token
@@ -38,8 +39,8 @@ func GenerateJWT(userID int) (string, error) {
 	return tokenString, nil
 }
 
-func ValidateJWT(tokenString string) (*jwt.RegisteredClaims, error) {
-	claims := &jwt.RegisteredClaims{}
+func ValidateJWT(tokenString string) (map[string]interface{}, error) {
+	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecret), nil
 	})

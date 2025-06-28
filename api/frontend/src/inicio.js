@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
+import { getUserRole } from "./utils/cookies";
 
 function Home() {
   const [activities, setActivities] = useState([]);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+
+  const isAdmin = getUserRole() === "admin";
 
   useEffect(() => {
     fetch("http://localhost:8080/activities")
@@ -37,6 +40,9 @@ function Home() {
   return (
     <div className="home-container">
       <h1 className="home-title">Actividades Disponibles</h1>
+      {isAdmin && (
+        <button onClick={() => navigate("/admin/create-activity")}>Crear actividad</button>
+      )}
 
       <div className="search-bar">
         <input

@@ -11,23 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == "" {
-			c.AbortWithStatusJSON(401, gin.H{"error": "No autorizado"})
-			return
-		}
-		claims, err := utils.ValidateJWT(tokenString)
-		if err != nil {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Token inválido o expirado"})
-			return
-		}
-		c.Set("userID", claims.ID)
-		c.Next()
-	}
-}
-
 func main() {
 	router := gin.Default()
 
@@ -62,15 +45,32 @@ func main() {
 	actividadesService := services.NewActivitiesService(actividadesClient, inscriptionsService)
 	actividadesController := controllers.NewActivitiesController(actividadesService)
 
+	// Crear instancias de los middlewares
+	authMiddleware := utils.AuthMiddleware(usersClient, "")       // Solo autenticación
+	adminMiddleware := utils.AuthMiddleware(usersClient, "admin") // Requiere rol "admin"
+
 	// Endpoints para socios (punto 2) - No requieren autenticación según el enunciado
 	router.GET("/activities", actividadesController.GetActivities)
 	router.GET("/activities/:id", actividadesController.GetActivityByID)
 	router.GET("/activities/search", actividadesController.SearchActivities)
-	router.GET("/users/:userID/activities", AuthMiddleware(), actividadesController.GetUserActivities)
-	router.POST("/users/:userID/enrollments", AuthMiddleware(), inscriptionsController.EnrollInActivity)
-
-	// Endpoints para autenticacion de usuarios (punto 1) - Requiere autenticación
+	// Requiere autenticación
 	router.POST("/login", userController.Login)
+
+	authgroup := router.Group("/")
+	authgroup.Use(authMiddleware)
+	{
+		authgroup.GET("/users/:userID/activities", actividadesController.GetUserActivities)
+		authgroup.POST("/users/:userID/enrollments", inscriptionsController.EnrollInActivity)
+	}
+
+	// Endpoints para administradores (requieren rol "admin")
+	adminGroup := router.Group("/admin")
+	adminGroup.Use(adminMiddleware)
+	{
+		adminGroup.POST("/activities", actividadesController.CreateActivity)
+		adminGroup.PUT("/activities/:id", actividadesController.UpdateActivity)
+		adminGroup.DELETE("/activities/:id", actividadesController.DeleteActivity)
+	}
 
 	router.Run(":8080")
 }

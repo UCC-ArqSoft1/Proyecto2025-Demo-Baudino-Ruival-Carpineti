@@ -40,3 +40,41 @@ func (c *ActividadesClient) GetActivityByID(id int) (dao.Activities, error) {
 	}
 	return activity, nil
 }
+
+// CreateActivity crea una nueva actividad
+func (c *ActividadesClient) CreateActivity(activity dao.Activities) error {
+	result := c.db.Create(&activity)
+	if result.Error != nil {
+		return fmt.Errorf("error creating activity: %w", result.Error)
+	}
+	return nil
+}
+
+// UpdateActivity actualiza una actividad existente
+func (c *ActividadesClient) UpdateActivity(activity dao.Activities) error {
+	// Eliminar los horarios existentes antes de guardar los nuevos
+	if err := c.db.Where("actividad_id = ?", activity.ID).Delete(&dao.Schedules{}).Error; err != nil {
+		return fmt.Errorf("error deleting old schedules: %w", err)
+	}
+	// Guardar la actividad con los nuevos horarios
+	result := c.db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&activity)
+	if result.Error != nil {
+		return fmt.Errorf("error updating activity: %w", result.Error)
+	}
+	return nil
+}
+
+// DeleteActivity elimina una actividad por su ID
+func (c *ActividadesClient) DeleteActivity(id int) error {
+	// Primero eliminamos los horarios asociados
+	if err := c.db.Where("actividad_id = ?", id).Delete(&dao.Schedules{}).Error; err != nil {
+		return fmt.Errorf("error deleting schedules: %w", err)
+	}
+
+	// Luego eliminamos la actividad
+	result := c.db.Delete(&dao.Activities{}, id)
+	if result.Error != nil {
+		return fmt.Errorf("error deleting activity: %w", result.Error)
+	}
+	return nil
+}

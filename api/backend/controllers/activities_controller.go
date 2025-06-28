@@ -16,6 +16,9 @@ type ActivitiesService interface {
 	GetActivityByID(id int) (domain.Activity, error)
 	SearchActivities(category, keyword string) []domain.Activity
 	GetActivitiesByUserID(userID int) []domain.Activity
+	CreateActivity(req domain.CreateActivityRequest) error
+	UpdateActivity(id int, req domain.UpdateActivityRequest) error
+	DeleteActivity(id int) error
 }
 
 // ActivitiesController maneja las peticiones HTTP relacionadas con actividades
@@ -72,4 +75,48 @@ func (c *ActivitiesController) GetUserActivities(ctx *gin.Context) {
 
 	activities := c.activitiesService.GetActivitiesByUserID(userID)
 	ctx.JSON(http.StatusOK, activities)
+}
+
+func (c *ActivitiesController) CreateActivity(ctx *gin.Context) {
+	var req domain.CreateActivityRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := c.activitiesService.CreateActivity(req); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.Status(http.StatusCreated)
+}
+
+func (c *ActivitiesController) UpdateActivity(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+	var req domain.UpdateActivityRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := c.activitiesService.UpdateActivity(id, req); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
+
+func (c *ActivitiesController) DeleteActivity(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+	if err := c.activitiesService.DeleteActivity(id); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.Status(http.StatusNoContent)
 }
