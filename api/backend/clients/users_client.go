@@ -7,10 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
+// 1. Implementacion de interfaz
 type UsersClient struct {
 	db *gorm.DB
 }
 
+// 2. Constructor de la implementacion del cliente
 func NewUsersClient(db *gorm.DB) *UsersClient {
 	return &UsersClient{
 		db: db,

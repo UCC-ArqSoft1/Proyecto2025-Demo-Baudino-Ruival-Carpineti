@@ -7,32 +7,30 @@ import (
 	"time"
 )
 
-// InscriptionsService define la interfaz para el servicio de inscripciones
+// 1. Definicion de interfaces
 type InscriptionsService interface {
 	EnrollUserInActivity(userID, scheduleID int) error
 	GetUserInscriptions(userID int) ([]domain.Inscription, error)
 }
 
-// InscriptionsClient define la interfaz para el cliente de inscripciones
 type InscriptionsClient interface {
 	GetUserInscriptions(userID int) ([]dao.Inscription, error)
 	CheckExistingEnrollment(userID, scheduleID int) (bool, error)
 	CreateEnrollment(enrollment dao.Inscription) error
 }
 
-// SchedulesClient define la interfaz para el cliente de horarios
 type SchedulesClient interface {
 	GetScheduleByID(id int) (dao.Schedules, error)
 	UpdateScheduleCapacity(id int) error
 }
 
-// InscriptionsServiceImpl implementa la interfaz InscriptionsService
+// 2. Estructura que implementa la interfaz
 type InscriptionsServiceImpl struct {
 	inscriptionsClient InscriptionsClient
 	schedulesClient    SchedulesClient
 }
 
-// NewInscriptionsService crea una nueva instancia del servicio de inscripciones
+// 3. Constructor de la implementacion
 func NewInscriptionsService(inscriptionsClient InscriptionsClient, schedulesClient SchedulesClient) InscriptionsService {
 	return &InscriptionsServiceImpl{
 		inscriptionsClient: inscriptionsClient,
@@ -42,18 +40,18 @@ func NewInscriptionsService(inscriptionsClient InscriptionsClient, schedulesClie
 
 // EnrollUserInActivity inscribe a un usuario en una actividad
 func (s *InscriptionsServiceImpl) EnrollUserInActivity(userID, scheduleID int) error {
-	// Get the schedule to check capacity
+	// Toma el horario por ID
 	schedule, err := s.schedulesClient.GetScheduleByID(scheduleID)
 	if err != nil {
 		return fmt.Errorf("error getting schedule: %w", err)
 	}
 
-	// Check if there's available capacity
+	// Checkea cupos
 	if schedule.Cupo <= 0 {
 		return fmt.Errorf("no hay cupo disponible en este horario")
 	}
 
-	// Check if user is already enrolled
+	// Checkea si el usuario ya está inscrito en el horario
 	exists, err := s.inscriptionsClient.CheckExistingEnrollment(userID, scheduleID)
 	if err != nil {
 		return fmt.Errorf("error checking enrollment: %w", err)
@@ -62,19 +60,19 @@ func (s *InscriptionsServiceImpl) EnrollUserInActivity(userID, scheduleID int) e
 		return fmt.Errorf("ya estas inscripto en este horario")
 	}
 
-	// Create the enrollment
+	// Crea el objeto inscripcion
 	enrollment := dao.Inscription{
 		UsuarioID:        userID,
 		HorarioID:        scheduleID,
 		FechaInscripcion: time.Now().Format("2006-01-02 15:04:05"),
 	}
 
-	// Create enrollment
+	// Crea la inscripción en la base de datos
 	if err := s.inscriptionsClient.CreateEnrollment(enrollment); err != nil {
 		return fmt.Errorf("error creating enrollment: %w", err)
 	}
 
-	// Update schedule capacity
+	// Actualiza el cupo del horario
 	if err := s.schedulesClient.UpdateScheduleCapacity(scheduleID); err != nil {
 		return fmt.Errorf("error updating schedule capacity: %w", err)
 	}

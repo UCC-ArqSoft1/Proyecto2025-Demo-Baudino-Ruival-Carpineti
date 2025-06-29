@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// ActividadesClient implementa la interfaz services.ActivitiesClient
+// 1. Implementacion de interfaz
 type ActividadesClient struct {
 	db *gorm.DB
 }
 
-// NewActividadesClient crea una nueva instancia del cliente de actividades
+// 2. Constructor de la implementacion del cliente
 func NewActividadesClient(db *gorm.DB) *ActividadesClient {
 	return &ActividadesClient{
 		db: db,

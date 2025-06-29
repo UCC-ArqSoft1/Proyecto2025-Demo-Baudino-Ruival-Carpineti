@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// InscriptionsClient implementa la interfaz services.InscriptionsClient
+// 1. Implementacion de interfaz
 type InscriptionsClient struct {
 	db *gorm.DB
 }
 
-// NewInscriptionsClient crea una nueva instancia del cliente de inscripciones
+// 2. Constructor de la implementacion del cliente
 func NewInscriptionsClient(db *gorm.DB) *InscriptionsClient {
 	return &InscriptionsClient{
 		db: db,

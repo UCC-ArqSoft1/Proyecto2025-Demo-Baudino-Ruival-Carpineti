@@ -31,6 +31,8 @@ func main() {
 	schedulesClient := clients.NewSchedulesClient(db)
 	inscriptionsClient := clients.NewInscriptionsClient(db)
 
+	//INYECCION DE DEPENDENCIAS
+
 	// Configuración de servicios y controladores de usuarios
 	userService := services.NewUsersService(usersClient)
 	userController := controllers.NewUserController(userService)

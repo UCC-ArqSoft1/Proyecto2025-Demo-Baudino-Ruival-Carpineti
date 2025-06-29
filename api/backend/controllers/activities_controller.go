@@ -8,25 +8,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ActivitiesController maneja las peticiones HTTP relacionadas con actividades
+// 1. Uso de la interfaz
 type ActivitiesController struct {
 	activitiesService services.ActivitiesService
 }
 
-// NewActivitiesController crea una nueva instancia del controlador de actividades
+// 2. Constructor de la implementación del controlador
 func NewActivitiesController(activitiesService services.ActivitiesService) *ActivitiesController {
 	return &ActivitiesController{
 		activitiesService: activitiesService,
 	}
 }
 
-// GetActivities maneja la petición para obtener todas las actividades
 func (c *ActivitiesController) GetActivities(ctx *gin.Context) {
 	activities := c.activitiesService.GetActivities()
 	ctx.JSON(http.StatusOK, activities)
 }
 
-// GetActivityByID maneja la petición para obtener una actividad por su ID
 func (c *ActivitiesController) GetActivityByID(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {

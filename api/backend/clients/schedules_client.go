@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// SchedulesClient implementa la interfaz services.SchedulesClient
+// 1. Implementacion de interfaz
 type SchedulesClient struct {
 	db *gorm.DB
 }
 
-// NewSchedulesClient crea una nueva instancia del cliente de horarios
+// 2. Constructor de la implementacion del cliente
 func NewSchedulesClient(db *gorm.DB) *SchedulesClient {
 	return &SchedulesClient{
 		db: db,
