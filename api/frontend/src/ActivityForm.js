@@ -70,11 +70,12 @@ function ActivityForm({ mode }) {
     const method = mode === "edit" ? "PUT" : "POST";
     const mappedForm = {
       ...form,
+      duration: Number(form.duration),
       schedules: form.schedules.map(s => ({
-        dia_semana: s.week_day,
-        hora_inicio: s.start_time,
-        hora_fin: s.end_time,
-        cupo: s.capacity
+        week_day: s.week_day,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        capacity: Number(s.capacity)
       }))
     };
     const res = await fetch(url, {
