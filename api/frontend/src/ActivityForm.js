@@ -68,18 +68,33 @@ function ActivityForm({ mode }) {
     const token = getCookie("token");
     const url = mode === "edit" ? `http://localhost:8080/admin/activities/${id}` : "http://localhost:8080/admin/activities";
     const method = mode === "edit" ? "PUT" : "POST";
+    const mappedForm = {
+      ...form,
+      duration: Number(form.duration),
+      schedules: form.schedules.map(s => ({
+        week_day: s.week_day,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        capacity: Number(s.capacity)
+      }))
+    };
     const res = await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
         "Authorization": token
       },
-      body: JSON.stringify(form)
+      body: JSON.stringify(mappedForm)
     });
     if (res.ok) {
       navigate("/activities");
     } else {
-      setError("Error al guardar la actividad");
+      let errorMsg = "Error al guardar la actividad";
+      try {
+        const data = await res.json();
+        if (data && data.error) errorMsg = data.error;
+      } catch {}
+      setError(errorMsg);
     }
   };
 
