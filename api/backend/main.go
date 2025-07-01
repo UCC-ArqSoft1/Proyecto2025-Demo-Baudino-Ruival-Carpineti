@@ -14,7 +14,7 @@ import (
 func main() {
 	router := gin.Default()
 
-	// Middleware CORS
+	// Configuración de CORS para permitir requests desde el frontend React
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -23,54 +23,69 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// Inicializar la base de datos
+	// Inicialización de la base de datos
 	db := db.InitDB()
 
-	// Inicializar clients específicos
+	// Inicialización de los clients (acceso a datos)
 	usersClient := clients.NewUsersClient(db)
 	actividadesClient := clients.NewActividadesClient(db)
 	schedulesClient := clients.NewSchedulesClient(db)
 	inscriptionsClient := clients.NewInscriptionsClient(db)
 
-	// Configuración de servicios y controladores de usuarios
+	// Servicios y controladores de usuarios
 	userService := services.NewUsersService(usersClient)
 	userController := controllers.NewUserController(userService)
 
-	// Configuración de servicios de inscripciones (debe crearse primero)
+	// Servicios y controladores de inscripciones
 	inscriptionsService := services.NewInscriptionsService(inscriptionsClient, schedulesClient)
 	inscriptionsController := controllers.NewInscriptionsController(inscriptionsService)
 
-	// Configuración de servicios y controladores de actividades
-	// actividadesClient implementa la interfaz services.ActivitiesClient
+	// Servicios y controladores de actividades deportivas
 	actividadesService := services.NewActivitiesService(actividadesClient, inscriptionsService)
 	actividadesController := controllers.NewActivitiesController(actividadesService)
 
-	// Crear instancias de los middlewares
-	authMiddleware := utils.AuthMiddleware(usersClient, "")       // Solo autenticación
-	adminMiddleware := utils.AuthMiddleware(usersClient, "admin") // Requiere rol "admin"
+	// Middlewares de autenticación y autorización
+	authMiddleware := utils.AuthMiddleware(usersClient, "")       // Verifica JWT, usado para endpoints de socios
+	adminMiddleware := utils.AuthMiddleware(usersClient, "admin") // Verifica JWT y rol admin, usado para endpoints de administradores
 
-	// Endpoints para socios (punto 2) - No requieren autenticación según el enunciado
-	router.GET("/activities", actividadesController.GetActivities)
-	router.GET("/activities/:id", actividadesController.GetActivityByID)
-	router.GET("/activities/search", actividadesController.SearchActivities)
-	// Requiere autenticación
-	router.POST("/login", userController.Login)
+	// ===================== ENDPOINTS PARA SOCIOS =====================
+	// Estos endpoints permiten:
+	// - Buscar actividades disponibles
+	// - Obtener detalle de actividad por ID
+	// - Listar actividades en las que el usuario está inscripto
+	// - Inscribirse en una actividad
+	// No requieren validación de permisos por token (excepto inscripción y "mis actividades")
+	router.GET("/activities", actividadesController.GetActivities)           // Listado y búsqueda de actividades (solo activas)
+	router.GET("/activities/:id", actividadesController.GetActivityByID)     // Detalle de actividad
+	router.GET("/activities/search", actividadesController.SearchActivities) // Búsqueda avanzada
+	router.POST("/login", userController.Login)                              // Autenticación de usuarios (genera JWT)
 
+	// Endpoints que requieren autenticación (socio logueado)
 	authgroup := router.Group("/")
 	authgroup.Use(authMiddleware)
 	{
-		authgroup.GET("/users/:userID/activities", actividadesController.GetUserActivities)
-		authgroup.POST("/users/:userID/enrollments", inscriptionsController.EnrollInActivity)
+		authgroup.GET("/users/:userID/activities", actividadesController.GetUserActivities)   // "Mis actividades"
+		authgroup.POST("/users/:userID/enrollments", inscriptionsController.EnrollInActivity) // Inscripción en actividad
 	}
 
-	// Endpoints para administradores (requieren rol "admin")
+	// ===================== ENDPOINTS PARA ADMINISTRADORES =====================
+	// Estos endpoints permiten:
+	// - Crear, editar y eliminar actividades deportivas
+	// - Listar todas las actividades (activas e inactivas)
+	// - Los administradores también pueden acceder a las funcionalidades de socio
+	// Requieren validación de token y rol admin
 	adminGroup := router.Group("/admin")
 	adminGroup.Use(adminMiddleware)
 	{
-		adminGroup.POST("/activities", actividadesController.CreateActivity)
-		adminGroup.PUT("/activities/:id", actividadesController.UpdateActivity)
-		adminGroup.DELETE("/activities/:id", actividadesController.DeleteActivity)
+		adminGroup.POST("/activities", actividadesController.CreateActivity)       // Crear actividad
+		adminGroup.PUT("/activities/:id", actividadesController.UpdateActivity)    // Editar actividad
+		adminGroup.DELETE("/activities/:id", actividadesController.DeleteActivity) // Eliminar actividad
+		adminGroup.GET("/activities", actividadesController.GetAllActivitiesAdmin) // Listar todas las actividades (admin)
 	}
+
+	// ===================== SEGURIDAD =====================
+	// - Todas las operaciones de escritura (crear, editar, eliminar) requieren JWT firmado
+	// - Las contraseñas de los usuarios se almacenan con hash seguro (SHA256)
 
 	router.Run(":8080")
 }

@@ -1,51 +1,56 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { getCookie } from "./utils/cookies";
-import "./Login.css";
+"use client"
 
-const Login = () => {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState(""); // corregido
-    const [error, setError] = useState("");
-    const navigate = useNavigate();
-  
-    useEffect(() => {
-      const token = getCookie("token");
-      if (token) {
-        navigate("/activities");
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import "./Login.css"
+import { getCookie } from "./utils/cookies"
+
+function Login() {
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const token = getCookie("token")
+    if (token) {
+      navigate("/activities")
+    }
+  }, [navigate])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError("")
+
+    try {
+      const response = await fetch("http://localhost:8080/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        setError(data.error || "Credenciales incorrectas")
+        return
       }
-    }, [navigate]);
-  
-    const handleLogin = async (e) => {
-      e.preventDefault();
-      setError("");
-  
-      try {
-        const response = await fetch("http://localhost:8080/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, password }), // corregido
-        });
-  
-        if (!response.ok) throw new Error("Login failed");
-  
-        const data = await response.json();
-        document.cookie = `token=${data.token}; path=/; SameSite=Strict`;
-  
-        navigate("/activities"); // redirección al home
-      } catch {
-        setError("Credenciales incorrectas");
-      }
-    };
-  
-    return (
-      <div className="login-container">
-  
-        <form className="login-form" onSubmit={handleLogin}>
-          <h2>Iniciar Sesión</h2>
-          {error && <div className="error">{error}</div>}
+
+      const data = await response.json()
+      document.cookie = `token=${data.token}; path=/; SameSite=Strict`
+      navigate("/activities")
+    } catch (err) {
+      setError("Error al iniciar sesión")
+    }
+  }
+
+  return (
+    <div className="login-container">
+      <div className="login-form">
+        <h2>Iniciar Sesión</h2>
+        {error && <div className="error">{error}</div>}
+        <form onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Usuario"
@@ -63,7 +68,8 @@ const Login = () => {
           <button type="submit">Entrar</button>
         </form>
       </div>
-    );
-  };
+    </div>
+  )
+}
 
-export default Login;
+export default Login
