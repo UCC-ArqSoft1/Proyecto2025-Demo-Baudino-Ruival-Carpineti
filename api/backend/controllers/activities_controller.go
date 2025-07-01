@@ -12,7 +12,7 @@ import (
 // Declarada aquí porque el controller es quien la usa
 // Así se sigue la buena práctica recomendada
 type ActivitiesService interface {
-	GetActivities() []domain.Activity
+	GetActivities(userRole string) []domain.Activity
 	GetActivityByID(id int) (domain.Activity, error)
 	SearchActivities(category, keyword string) []domain.Activity
 	GetActivitiesByUserID(userID int) []domain.Activity
@@ -35,7 +35,8 @@ func NewActivitiesController(activitiesService ActivitiesService) *ActivitiesCon
 
 // GetActivities maneja la petición para obtener todas las actividades
 func (c *ActivitiesController) GetActivities(ctx *gin.Context) {
-	activities := c.activitiesService.GetActivities()
+	userRole := ctx.GetString("userRole") // Si no está seteado, será ""
+	activities := c.activitiesService.GetActivities(userRole)
 	ctx.JSON(http.StatusOK, activities)
 }
 
@@ -119,4 +120,11 @@ func (c *ActivitiesController) DeleteActivity(ctx *gin.Context) {
 		return
 	}
 	ctx.Status(http.StatusNoContent)
+}
+
+// GetAllActivitiesAdmin maneja la petición para obtener todas las actividades (solo admin)
+func (c *ActivitiesController) GetAllActivitiesAdmin(ctx *gin.Context) {
+	userRole := ctx.GetString("userRole") // Siempre será "admin" por el middleware
+	activities := c.activitiesService.GetActivities(userRole)
+	ctx.JSON(http.StatusOK, activities)
 }

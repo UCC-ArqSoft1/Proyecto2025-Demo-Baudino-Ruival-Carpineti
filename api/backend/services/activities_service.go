@@ -31,15 +31,26 @@ func NewActivitiesService(actividadesClient ActivitiesClient, inscriptionsServic
 }
 
 // GetActivities returns all available activities
-func (s *ActivitiesServiceImpl) GetActivities() []domain.Activity {
+func (s *ActivitiesServiceImpl) GetActivities(userRole string) []domain.Activity {
 	activitiesDAO, err := s.actividadesClient.GetAllActivities()
 	if err != nil {
 		fmt.Printf("Error getting activities: %v\n", err)
 		return []domain.Activity{}
 	}
 
-	activities := make([]domain.Activity, len(activitiesDAO))
-	for i, activityDAO := range activitiesDAO {
+	var filtered []dao.Activities
+	if userRole == "admin" {
+		filtered = activitiesDAO
+	} else {
+		for _, a := range activitiesDAO {
+			if a.Estado == "activo" {
+				filtered = append(filtered, a)
+			}
+		}
+	}
+
+	activities := make([]domain.Activity, len(filtered))
+	for i, activityDAO := range filtered {
 		schedules := make([]domain.Schedule, len(activityDAO.Horarios))
 		for j, scheduleDAO := range activityDAO.Horarios {
 			schedules[j] = domain.Schedule{
