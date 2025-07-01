@@ -25,5 +25,5 @@ INSERT INTO users (id, password_hash, email, rol, username) VALUES
 (8, 'bb866952a8675f537773e9854cc9c5b3be33b22bee2e11dbb71fd07f3317c335', 'sofia@gmail.com', 'socio', 'Sofia'),
 (9, '90a5d5a8573d7f52021a85d65d98f44c58a2006b9532204039206705a4d31f80', 'julian@gmail.com', 'socio', 'Julian'),
 (10, '80d161545383dd77c8703ec50d566ae19f9f6bb5b68b42b26482f1cdf21bf8f2', 'camila@gmail.com', 'socio', 'Camila'),
-(11, 'ea14b35aa297b61e95e0692c4ba04b71d38ed6dcfb49de4e37fb4ae39ffa2bbf', 'felipe@gmail.com', 'Administrador', 'Felipe'),
-(12, '9ff18ebe7449349f358e3af0b57cf7a032c1c6b2272cb2656ff85eb112232f16', 'maria@gmail.com', 'Administrador', 'Maria'); 
+(11, 'ea14b35aa297b61e95e0692c4ba04b71d38ed6dcfb49de4e37fb4ae39ffa2bbf', 'felipe@gmail.com', 'admin', 'Felipe'),
+(12, '9ff18ebe7449349f358e3af0b57cf7a032c1c6b2272cb2656ff85eb112232f16', 'maria@gmail.com', 'admin', 'Maria'); 
